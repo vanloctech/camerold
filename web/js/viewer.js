@@ -97,6 +97,7 @@ async function start(cam) {
   // Connection server: the saved camera's own, the one its QR code carried, or this viewer's setting
   const broker = cam ? (cam.broker || null) : (S.linkBroker || ownBroker());
   S.linkBroker = null; S.room = room;
+  restoreRotation(room);
   if (cam || $('remember').checked) putCam({ room, pass, broker, last: Date.now() });
   save();
   $('loginMsg').textContent = ''; $('go').disabled = true; $('go').textContent = t('securing');

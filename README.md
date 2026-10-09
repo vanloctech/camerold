@@ -123,8 +123,9 @@ The page needs HTTPS (or `localhost`) because it uses the browser's encryption a
 At home, the two devices usually connect directly. Many mobile networks use carrier‑grade NAT, which blocks direct
 connections; then a **relay (TURN) server** is needed. It's only used when a direct connection isn't possible.
 
-1. Create a free account, for example at [ExpressTURN](https://www.expressturn.com/). You get a server address
-   (like `free.expressturn.com:3478`), a user name and a password.
+1. Get a TURN server: sign up with a TURN service (several have free plans) or run your own, e.g. with the
+   open‑source [coturn](https://github.com/coturn/coturn). You need a server address (like `turn.example.com:3478`),
+   a user name and a password.
 2. Enter it **either**
    - on the camera phone: *Camera settings → Watch over 4G* → **Test server**, **or**
    - from a viewer while connected: *⚙ (camera settings) → Watching over 4G (relay server)* → **Send to camera**.

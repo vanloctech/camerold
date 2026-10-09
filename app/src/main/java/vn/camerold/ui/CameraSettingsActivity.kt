@@ -186,9 +186,6 @@ class CameraSettingsActivity : BaseActivity() {
         lockable += listOf(turnUrls, turnUser, turnPass)
         rTurnTest = rows.row(turn, R.drawable.ic_check, R.string.turn_test) { testTurn() }
         rTurnTest.value(getString(if (cfg.turnUrls.isEmpty()) R.string.turn_empty else R.string.turn_saved))
-        rows.row(turn, R.drawable.ic_external, R.string.turn_get) {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.expressturn.com/")))
-        }.value(getString(R.string.turn_get_sub))
         rows.note(content, getString(R.string.turn_help))
 
         // Heat protection: can change any time, also while streaming (applied live)

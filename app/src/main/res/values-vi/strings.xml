@@ -99,9 +99,9 @@
     <string name="heat_start">Bắt đầu khi pin đạt</string>
     <string name="heat_start_value">%1$d °C (rồi %2$d và %3$d °C)</string>
     <string name="heat_note">Tới mức đầu, camera giảm số hình/giây, sau đó giảm độ phân giải, và tự trở lại khi máy nguội vài phút. Tăng mức này nếu máy chỉ hơi ấm mà vẫn bị giảm.</string>
-    <string name="turn_help">Chỉ cần khi người xem dùng 4G mà không xem được. Lấy máy chủ chuyển tiếp miễn phí rồi dán thông tin vào đây.</string>
+    <string name="turn_help">Chỉ cần khi người xem dùng 4G mà không xem được. Nhập máy chủ TURN của bạn ở đây, hoặc gửi từ máy xem (cài đặt camera › Xem qua 4G).</string>
     <string name="turn_url">Địa chỉ máy chủ</string>
-    <string name="turn_url_hint">vd: relay1.expressturn.com:3478</string>
+    <string name="turn_url_hint">vd: turn.example.com:3478</string>
     <string name="turn_user">Tên đăng nhập</string>
     <string name="turn_pass">Mật khẩu máy chủ</string>
     <string name="turn_test">Kiểm tra máy chủ</string>
@@ -111,8 +111,6 @@
     <string name="turn_ok">Hoạt động tốt · đã lưu</string>
     <string name="turn_fail">Không kết nối được · kiểm tra lại thông tin</string>
     <string name="turn_need_url">Hãy nhập địa chỉ máy chủ trước</string>
-    <string name="turn_get">Lấy máy chủ miễn phí</string>
-    <string name="turn_get_sub">ExpressTURN · đăng ký rồi dán thông tin vào phía trên</string>
     <string name="row_dim">Tắt sáng màn hình</string>
     <string name="dim_overlay">Vẫn đang phát · chạm 2 lần để bật sáng</string>
     <string name="row_background">Chạy nền liên tục</string>

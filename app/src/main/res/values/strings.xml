@@ -101,9 +101,9 @@
     <string name="heat_start">Start at battery temperature</string>
     <string name="heat_start_value">%1$d °C (then %2$d and %3$d °C)</string>
     <string name="heat_note">At the first temperature the camera lowers the frame rate, then the resolution, and goes back once the phone has cooled for a few minutes. Raise it if it triggers while the phone only feels warm.</string>
-    <string name="turn_help">Only needed when viewers on 4G can\'t connect. Get a free relay server, then paste its details here.</string>
+    <string name="turn_help">Only needed when viewers on 4G can\'t connect. Enter your TURN server here, or send it from a viewer (camera settings › Watching over 4G).</string>
     <string name="turn_url">Server address</string>
-    <string name="turn_url_hint">e.g. relay1.expressturn.com:3478</string>
+    <string name="turn_url_hint">e.g. turn.example.com:3478</string>
     <string name="turn_user">Username</string>
     <string name="turn_pass">Server password</string>
     <string name="turn_test">Test server</string>
@@ -113,8 +113,6 @@
     <string name="turn_ok">Working · saved</string>
     <string name="turn_fail">Couldn\'t connect · check the details</string>
     <string name="turn_need_url">Enter the server address first</string>
-    <string name="turn_get">Get a free server</string>
-    <string name="turn_get_sub">ExpressTURN · sign up, then paste the details above</string>
     <string name="row_dim">Turn off screen light</string>
     <string name="dim_overlay">Still streaming · double-tap to wake</string>
     <string name="row_background">Run in background</string>

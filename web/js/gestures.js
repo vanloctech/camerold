@@ -36,7 +36,18 @@ function setFill(on) {
   Z.fill = !!on; layoutVideo(); savePatch({ fill: Z.fill });
   setSeg('selFit', Z.fill ? 'fill' : 'fit');
 }
-function rotateView() { Z.rot = (Z.rot + 90) % 360; Z.s = 1; Z.tx = Z.ty = 0; layoutVideo(); showCtl(); }
+function rotateView() {
+  Z.rot = (Z.rot + 90) % 360; Z.s = 1; Z.tx = Z.ty = 0; layoutVideo(); showCtl();
+  // Remembered per saved camera: each phone may be mounted its own way
+  const cam = S.room && findCam(S.room);
+  if (cam) putCam({ room: cam.room, rot: Z.rot }, false);
+}
+/** Turn the view the way it was last time for this camera (0 / 90 / 180 / 270). */
+function restoreRotation(room) {
+  const r = +(findCam(room)?.rot) || 0;
+  Z.rot = [0, 90, 180, 270].includes(r) ? r : 0; Z.s = 1; Z.tx = Z.ty = 0;
+  layoutVideo();
+}
 
 const pts = new Map();
 let gesture = null, lastTap = 0, moved = false;

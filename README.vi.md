@@ -123,8 +123,9 @@ Trang cần chạy qua HTTPS (hoặc `localhost`) vì dùng tính năng mã hoá
 Ở nhà, hai máy thường kết nối thẳng được. Nhiều nhà mạng di động dùng NAT kiểu nhà mạng (CGNAT), chặn kết nối
 thẳng; khi đó cần **máy chủ chuyển tiếp (TURN)**. Máy chủ này chỉ được dùng khi không thể kết nối thẳng.
 
-1. Tạo tài khoản miễn phí, ví dụ ở [ExpressTURN](https://www.expressturn.com/). Bạn sẽ có địa chỉ máy chủ
-   (dạng `free.expressturn.com:3478`), tên đăng nhập và mật khẩu.
+1. Chuẩn bị máy chủ TURN: đăng ký một dịch vụ TURN (nhiều nơi có gói miễn phí) hoặc tự dựng bằng phần mềm mã nguồn
+   mở [coturn](https://github.com/coturn/coturn). Bạn cần địa chỉ máy chủ (dạng `turn.example.com:3478`), tên đăng nhập
+   và mật khẩu.
 2. Nhập vào **một trong hai** nơi:
    - trên máy camera: *Cài đặt camera → Xem bằng 4G* → **Kiểm tra máy chủ**, **hoặc**
    - từ máy xem khi đang kết nối: *⚙ (cài đặt camera) → Xem qua 4G (máy chủ chuyển tiếp)* → **Gửi sang camera**.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.0
+- Viewer remembers the picture rotation (↻) for each saved camera.
+- Removed the link to a specific TURN provider and its example addresses; the 4G help is now provider‑neutral.
+
 ## 3.1.0
 - Picture frame option: 4:3 (widest, whole sensor) or 16:9 (fits landscape screens), also switchable from the viewer.
 - Viewer: show/hide the password, and *Let another phone watch* shows a saved camera's QR code.

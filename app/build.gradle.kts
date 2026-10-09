@@ -13,7 +13,7 @@ android {
         targetSdk = 34
         // Release builds on CI take the version from the git tag (v3.2.0 -> 3.2.0, see .github/workflows/release.yml);
         // local builds use the version below. versionCode is derived from it, so it always goes up with the version.
-        val version = System.getenv("RELEASE_VERSION")?.takeIf { it.isNotBlank() } ?: "3.1.0"
+        val version = System.getenv("RELEASE_VERSION")?.takeIf { it.isNotBlank() } ?: "3.2.0"
         versionName = version
         versionCode = versionCodeOf(version)
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
