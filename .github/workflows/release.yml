@@ -1,0 +1,100 @@
+# Release: push a version tag and GitHub builds the APK and publishes it.
+#
+#   git tag v3.2.0 && git push origin v3.2.0
+#
+# - The app's version comes from the tag (v3.2.0 -> versionName 3.2.0, versionCode 30200).
+# - Release notes come from the matching "## 3.2.0" section of CHANGELOG.md (GitHub's own notes are added below).
+# - Tags with a suffix (v3.2.0-beta.1) are published as pre-releases.
+# - The APK is always named Camerold.apk, so this link always gets the latest version:
+#   https://github.com/<owner>/<repo>/releases/latest/download/Camerold.apk
+#
+# Signing: add these repository secrets so every release has the same signature (users can then update in place):
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+# Without them the APK is signed with the runner's throwaway debug key, and the release says so.
+name: Release
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version from tag
+        id: v
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME is not a version like v3.2.0 or v3.2.0-beta.1"; exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          if [[ "$VERSION" == *-* ]]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Web viewer tests
+        run: |
+          for f in web/js/*.js; do node --check "$f"; done
+          node --test tests/*.test.mjs
+
+      - name: Decode signing key
+        if: ${{ env.KS != '' }}
+        run: echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks" && echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build and test
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew testDebugUnitTest assembleRelease
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk dist/Camerold.apk
+          (cd dist && sha256sum Camerold.apk > Camerold.apk.sha256)
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          V="${{ steps.v.outputs.version }}"
+          # The "## <version>" section (also accepts "## [<version>]" and "## <version> - date")
+          awk -v v="$V" '
+            /^## / { if (found) exit; h=$0; sub(/^## \[?/, "", h); split(h, a, /[] ]/); if (a[1] == v) { found=1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "See [CHANGELOG.md](CHANGELOG.md)." > notes.md; fi
+          {
+            echo
+            echo "### Download"
+            echo "**[Camerold.apk](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/Camerold.apk)**: install it on the camera phone and on Android phones you watch from (Android 8.0+)."
+            echo "SHA-256: \`$(cut -d' ' -f1 dist/Camerold.apk.sha256)\`"
+            if [ -z "$KS" ]; then
+              echo
+              echo "> ⚠️ This build is signed with a temporary key. To update it later you may need to uninstall it first."
+            fi
+          } >> notes.md
+          cat notes.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Camerold ${{ steps.v.outputs.version }}
+          body_path: notes.md
+          generate_release_notes: true
+          prerelease: ${{ steps.v.outputs.prerelease }}
+          files: |
+            dist/Camerold.apk
+            dist/Camerold.apk.sha256

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#f4f4f6" id="themeColor">
+<meta name="description" content="Camerold viewer – watch an old Android phone as a live security camera, peer-to-peer and end-to-end encrypted.">
+<title>Camerold</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.6-2h6.2l1.6 2h1.8A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.8"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.1"/></symbol>
+    <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+    <symbol id="i-unfull" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
+    <symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+    <symbol id="i-torch" viewBox="0 0 24 24"><path d="M8 3h8v4l-2 3v11h-4V10L8 7z"/><path d="M12 13v2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 10v4.5M12 17.2v.1"/></symbol>
+    <symbol id="i-camoff" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M8.5 6H9l1.6-2h4.8l1.6 2h1.5A2.5 2.5 0 0 1 21 8.5v8M18.5 20h-13A2.5 2.5 0 0 1 3 17.5v-9A2.5 2.5 0 0 1 5 6"/><path d="M9.6 10.6a3.8 3.8 0 0 0 5.2 5.2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 6.6A9 9 0 0 1 12 6.5c6 0 9.5 5.5 9.5 5.5a15 15 0 0 1-2.9 3.4M6.4 7.9A15 15 0 0 0 2.5 12S6 18.5 12 18.5a9 9 0 0 0 4.2-1"/><path d="M9.9 10a3 3 0 0 0 4.1 4.1"/></symbol>
+    <symbol id="i-heat" viewBox="0 0 24 24"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0z"/><path d="M12 9v6"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-9 9"/></symbol>
+    <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="2.5"/><path d="M22 10.5v3M6 10v4"/></symbol>
+    <symbol id="i-shot" viewBox="0 0 24 24"><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 7.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/><path d="M17 9h.01"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 5.5h.01M12 12h.01M12 18.5h.01" stroke-width="3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8M16 7l2.5 2.5M14 9l2 2"/></symbol>
+    <symbol id="i-flip" viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.3l1.4-2h5.6l1.4 2h1.3A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><path d="M9 12.5a3 3 0 0 1 5.2-2M15 12.5a3 3 0 0 1-5.2 2M14.3 8.6v1.9h-1.9M9.7 16.4v-1.9h1.9"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 19h1M19 14h1"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ Connect ============ -->
+<main id="login">
+  <header class="appbar">
+    <span class="brand"><img class="brand-ic" src="icon.svg" alt="">Camerold</span>
+    <button class="icon-btn" id="openSettings" type="button" data-i18n-label="app_settings"><svg class="i"><use href="#i-gear"/></svg></button>
+  </header>
+
+  <h1 class="page-title" id="loginTitle" data-i18n="watch_title"></h1>
+  <p class="page-sub" id="loginSub" data-i18n="hero_sub"></p>
+
+  <!-- Saved cameras: tap to watch, ⋮ to share or remove -->
+  <div id="camListBox" hidden>
+    <div class="group" id="camList"></div>
+    <p class="section-title" data-i18n="add_camera"></p>
+  </div>
+
+  <button class="tonal" id="scanBtn" type="button"><svg class="i"><use href="#i-qr"/></svg><span data-i18n="scan_btn"></span></button>
+  <!-- No webcam (PC)? A screenshot of the camera's QR code works too: pick, paste (Ctrl+V) or drop it -->
+  <button class="text-btn" id="uploadQr" type="button"><svg class="i"><use href="#i-image"/></svg><span data-i18n="upload_qr"></span></button>
+  <input type="file" id="qrFile" accept="image/*" hidden>
+  <button class="text-btn" id="manualToggle" type="button" hidden><svg class="i"><use href="#i-key"/></svg><span data-i18n="enter_code"></span></button>
+  <div id="manualBox">
+  <p class="or"><span data-i18n="or_enter"></span></p>
+  <div class="group">
+    <label class="row field"><span data-i18n="code"></span>
+      <input id="room" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" data-i18n-ph="code_ph"></label>
+    <label class="row field"><span data-i18n="password"></span>
+      <span class="pw-line"><input id="pass" type="password" autocomplete="current-password" data-i18n-ph="password_ph">
+        <button class="eye" id="bEye" type="button" data-i18n-label="a_show_pass"><svg class="i"><use href="#i-eye" id="eyeIcon"/></svg></button></span></label>
+    <label class="row"><div class="grow t" data-i18n="remember"></div>
+      <input type="checkbox" class="switch" id="remember" checked></label>
+  </div>
+
+  </div>
+
+  <p id="loginMsg" role="alert"></p>
+  <div class="bottom-cta" id="goBar"><button class="pill" id="go" data-i18n="watch"></button></div>
+  <div id="snack" role="status" hidden><span id="snackText"></span><button type="button" id="snackUndo" data-i18n="undo"></button></div>
+</main>
+
+<!-- Actions for one saved camera -->
+<div id="camMenu" class="dlg sheet" hidden>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="camMenuTitle">
+    <div class="sheet-title"><b id="camMenuTitle"></b><span id="camMenuSub"></span></div>
+    <button class="sheet-btn" id="camMenuShare" type="button"><svg class="i"><use href="#i-qr"/></svg><span data-i18n="share_t"></span></button>
+    <button class="sheet-btn danger" id="camMenuDelete" type="button"><svg class="i"><use href="#i-trash"/></svg><span data-i18n="cam_delete"></span></button>
+    <button class="sheet-btn muted" id="camMenuCancel" type="button" data-i18n="cancel"></button>
+  </div>
+</div>
+
+<!-- ============ Settings (viewer) ============ -->
+<section id="settings" class="page" hidden>
+  <header class="appbar">
+    <button class="icon-btn" id="closeSettings" type="button" data-i18n-label="a_back"><svg class="i"><use href="#i-back"/></svg></button>
+    <h2 data-i18n="app_settings"></h2>
+  </header>
+  <div class="page-body">
+    <!-- Inside the app these follow the app's own settings -->
+    <div id="lookGroup">
+      <p class="section-title" data-i18n="s_general"></p>
+      <div class="group">
+        <div class="row col"><div class="t" data-i18n="theme"></div>
+          <div class="seg" id="selTheme"><button data-v="system" data-i18n="theme_system"></button><button data-v="light" data-i18n="theme_light"></button><button data-v="dark" data-i18n="theme_dark"></button></div></div>
+        <!-- Filled from the translations in i18n.js: a list scales to any number of languages -->
+        <label class="row"><div class="grow t" data-i18n="lang"></div><select id="selLang"></select></label>
+      </div>
+    </div>
+
+    <p class="section-title" data-i18n="s_broker"></p>
+    <div class="group">
+      <label class="row"><div class="grow t" data-i18n="broker_mode"></div>
+        <select id="brokerMode"><option value="public" data-i18n="broker_public"></option><option value="own" data-i18n="broker_own"></option></select></label>
+      <div id="ownBroker">
+        <label class="row"><div class="grow t" data-i18n="provider"></div><select id="brokerProvider"></select></label>
+        <label class="row field"><span data-i18n="broker_host"></span>
+          <input id="brokerHost" type="text" autocapitalize="off" spellcheck="false"></label>
+        <label class="row field"><span data-i18n="relay_user"></span><input id="brokerUser" type="text" autocapitalize="off" spellcheck="false"></label>
+        <label class="row field"><span data-i18n="relay_pass"></span><input id="brokerPass" type="password"></label>
+        <label class="row"><div class="grow"><div class="t" data-i18n="broker_backup"></div><div class="s" data-i18n="broker_backup_sub"></div></div>
+          <input type="checkbox" class="switch" id="brokerBackup" checked></label>
+        <button class="row link" id="brokerTest" type="button" data-i18n="broker_test"></button>
+        <div class="row" id="brokerResult" hidden><div class="grow s"></div></div>
+        <a class="row link" id="brokerSignup" target="_blank" rel="noopener" data-i18n="broker_signup"></a>
+      </div>
+    </div>
+    <p class="note" id="brokerNote"></p>
+
+    <p class="section-title" data-i18n="relay"></p>
+    <div class="group">
+      <label class="row field"><span data-i18n="relay_url"></span>
+        <input id="turnUrl" type="text" autocapitalize="off" spellcheck="false" data-i18n-ph="relay_url_ph"></label>
+      <label class="row field"><span data-i18n="relay_user"></span><input id="turnUser" type="text" autocapitalize="off" spellcheck="false"></label>
+      <label class="row field"><span data-i18n="relay_pass"></span><input id="turnPass" type="password"></label>
+      <div class="row" id="turnSavedRow" hidden><div class="grow s ok" data-i18n="relay_saved"></div></div>
+      <a class="row link" href="https://www.expressturn.com/" target="_blank" rel="noopener" data-i18n="relay_get"></a>
+    </div>
+    <p class="note" data-i18n="relay_sub"></p>
+
+    <p class="section-title" data-i18n="s_trouble"></p>
+    <div class="group">
+      <button class="row link" id="netCheck" type="button" data-i18n="netcheck"></button>
+      <pre id="netResult"></pre>
+      <label class="row"><div class="grow"><div class="t" data-i18n="format"></div><div class="s" data-i18n="format_sub"></div></div>
+        <select id="codec"><option value="H264" data-i18n="format_std"></option><option value="VP8" data-i18n="format_compat"></option><option value="" data-i18n="format_auto"></option></select></label>
+    </div>
+
+    <p class="foot" data-i18n="footer"></p>
+  </div>
+</section>
+
+<!-- ============ QR for another viewer ============ -->
+<div id="qrDlg" class="dlg" hidden>
+  <div class="qr-card" id="qrBox" role="dialog" aria-modal="true" data-i18n-label="share_t"></div>
+</div>
+
+<!-- ============ QR scanner ============ -->
+<div id="scanner" hidden>
+  <!-- poster: a transparent pixel, so Android WebView doesn't show its grey "video" placeholder while the camera opens -->
+  <video id="scanVideo" playsinline muted poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
+  <div id="scanCover"></div>
+  <div class="scan-frame"></div>
+  <div class="scan-top"><button class="ib glass" id="scanClose" data-i18n-label="a_close"><svg class="i"><use href="#i-x"/></svg></button><h3 data-i18n="scan_title"></h3></div>
+  <div class="scan-bottom">
+    <div id="scanHint" class="glass"></div>
+    <button class="pill-glass" id="scanPick" type="button"><svg class="i"><use href="#i-image"/></svg><span data-i18n="scan_pick"></span></button>
+  </div>
+</div>
+
+<!-- ============ Viewer ============ -->
+<div id="viewer" class="stacked" hidden>
+  <div id="player">
+    <div id="stage"><div id="zoom"><video id="video" autoplay playsinline muted poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video></div></div>
+    <div id="overlay" hidden>
+      <div class="ov-card">
+        <div class="ov-icon"><i></i><i></i><svg class="i"><use href="#i-camera" id="ovIcon"/></svg></div>
+        <div class="ov-title" id="ovTitle"></div>
+        <div class="ov-text" id="ovText"></div>
+        <ol class="ov-steps" id="ovSteps">
+          <li><span></span><b data-i18n="step_net"></b></li><li><span></span><b data-i18n="step_find"></b></li><li><span></span><b data-i18n="step_link"></b></li>
+        </ol>
+        <div class="ov-retry" id="ovRetry"><span class="mini-spin"></span><span data-i18n="retrying"></span></div>
+      </div>
+    </div>
+    <div id="flash"></div>
+    <div id="heatPill" class="glass" hidden><svg class="i"><use href="#i-heat" id="heatIcon"/></svg><span id="heatText"></span></div>
+    <div id="reconnectPill" class="glass" hidden><span class="mini-spin"></span><span data-i18n="reconnecting"></span></div>
+    <div id="focusRing"></div>
+    <div id="pinchChip" class="glass" hidden></div>
+    <div id="stats" class="glass" hidden></div>
+    <div id="toast" class="glass" hidden></div>
+    <div id="ctl">
+      <div class="ctl-top">
+        <button class="ib" id="bBack" data-i18n-label="a_back"><svg class="i"><use href="#i-back" id="backIcon"/></svg></button>
+        <div class="ctl-title"><b id="camTitle"></b><span id="camSub"></span></div>
+        <!-- Camera phone warning (hot / battery low), shown briefly as a notice, then only this small icon -->
+        <button class="ib warn-badge" id="warnBadge" hidden><svg class="i"><use href="#i-heat" id="warnBadgeIcon"/></svg></button>
+        <button class="ib" id="bSnap" data-i18n-label="a_snap"><svg class="i"><use href="#i-shot"/></svg></button>
+        <button class="ib" id="bStats" data-i18n-label="a_stats"><svg class="i"><use href="#i-info"/></svg></button>
+        <button class="ib" id="bPanel" data-i18n-label="a_settings"><svg class="i"><use href="#i-sliders"/></svg></button>
+      </div>
+      <div class="ctl-bottom">
+        <div class="ctl-row">
+          <span class="live wait" id="liveBadge" role="img" data-i18n-label="live"><i></i></span>
+          <button class="ib sm" id="bMute" data-i18n-label="a_mute"><svg class="i"><use href="#i-mute" id="muteIcon"/></svg></button>
+          <span id="zoomTxt"></span>
+          <span class="grow"></span>
+          <div id="lenses"></div>
+          <button class="ib sm" id="bRotate" data-i18n-label="a_rotate"><svg class="i"><use href="#i-rotate"/></svg></button>
+          <button class="ib sm" id="bFull" data-i18n-label="a_full"><svg class="i"><use href="#i-full" id="fullIcon"/></svg></button>
+        </div>
+        <input type="range" id="zoomBar" class="ytbar" min="1" max="7" step="0.005" value="1" data-i18n-label="a_zoom">
+      </div>
+    </div>
+  </div>
+
+  <section id="below">
+    <h2 id="camTitle2"></h2>
+    <div class="substatus"><span class="dot" id="dot"></span><span id="statusText"></span></div>
+    <div class="chips">
+      <button class="chip" id="qcAudio"><svg class="i"><use href="#i-mute" id="qcAudioIcon"/></svg><span id="qcAudioText"></span></button>
+      <button class="chip" id="qcTorch"><svg class="i"><use href="#i-torch"/></svg><span data-i18n="chip_torch"></span></button>
+      <button class="chip" id="qcNight"><svg class="i"><use href="#i-moon"/></svg><span data-i18n="chip_night"></span></button>
+      <button class="chip" id="qcFront" hidden><svg class="i"><use href="#i-flip"/></svg><span data-i18n="chip_front"></span></button>
+      <button class="chip" id="qcRotate"><svg class="i"><use href="#i-rotate"/></svg><span data-i18n="chip_rotate"></span></button>
+      <button class="chip" id="qcInfo"><svg class="i"><use href="#i-info"/></svg><span data-i18n="chip_info"></span></button>
+    </div>
+  </section>
+
+  <div id="scrim"></div>
+  <section id="panel">
+    <div class="sheet-head"><div class="grabber" id="grabber"></div><h3 data-i18n="settings_title"></h3></div>
+
+    <p class="sgroup-title" data-i18n="g_picture"></p>
+    <div class="sgroup">
+      <label class="srow" id="rowFront" hidden><div class="grow"><div class="t" data-i18n="front_cam"></div><div class="s" data-i18n="front_cam_sub"></div></div>
+        <input type="checkbox" class="switch" id="tFront"></label>
+      <div class="srow col"><div class="t" data-i18n="quality"></div>
+        <div class="seg" id="selRes"><button data-v="720">HD</button><button data-v="1080">Full HD</button><button data-v="2160">4K</button></div>
+        <div class="s" data-i18n="quality_hint"></div></div>
+      <div class="srow col"><div class="t" data-i18n="aspect"></div>
+        <div class="seg" id="selAspect"><button data-v="4:3" data-i18n="aspect_43"></button><button data-v="16:9" data-i18n="aspect_169"></button></div>
+        <div class="s" data-i18n="aspect_hint"></div></div>
+      <div class="srow col"><div class="t" data-i18n="display"></div>
+        <div class="seg" id="selFit"><button data-v="fit" data-i18n="a_fit"></button><button data-v="fill" data-i18n="a_fill"></button></div>
+        <div class="s" data-i18n="display_hint"></div></div>
+      <div class="srow col"><div class="t" data-i18n="fps"></div>
+        <div class="seg" id="selFps"><button data-v="15">15</button><button data-v="24">24</button><button data-v="30">30</button><button data-v="60">60</button></div></div>
+    </div>
+
+    <p class="sgroup-title" data-i18n="g_light"></p>
+    <div class="sgroup">
+      <label class="srow" id="rowTorch"><div class="grow"><div class="t" data-i18n="torch"></div><div class="s" data-i18n="torch_sub"></div></div>
+        <input type="checkbox" class="switch" id="tTorch"></label>
+      <label class="srow"><div class="grow"><div class="t" data-i18n="night"></div><div class="s" data-i18n="night_sub"></div></div>
+        <input type="checkbox" class="switch" id="tNight"></label>
+      <div class="srow col"><div class="head"><div class="t" data-i18n="brightness"></div><b class="v" id="evVal"></b></div>
+        <input type="range" class="srange" id="ev" min="-12" max="12" step="1" value="0"></div>
+    </div>
+
+    <p class="sgroup-title" id="focusTitle" data-i18n="g_focus"></p>
+    <div class="sgroup" id="focusGroup">
+      <div class="srow col" id="rowFocus">
+        <div class="seg" id="selFocus">
+          <button data-v="auto" data-i18n="focus_auto"></button><button data-v="point" data-i18n="focus_point"></button><button data-v="lock" data-i18n="focus_lock"></button><button data-v="manual" data-i18n="focus_manual"></button><button data-v="inf" data-i18n="focus_far"></button>
+        </div>
+        <div class="s" id="focusHint" data-i18n="focus_hint"></div></div>
+      <div class="srow col" id="rowFdist" hidden><div class="head"><div class="t" data-i18n="fdist"></div><b class="v" id="fdistVal"></b></div>
+        <input type="range" class="srange" id="fdist" min="0" max="1" step="0.01" value="0">
+        <div class="range-labels"><span data-i18n="fdist_far"></span><span data-i18n="fdist_near"></span></div></div>
+    </div>
+
+    <p class="sgroup-title" id="moreTitle" data-i18n="g_more"></p>
+    <div class="sgroup" id="moreGroup">
+      <label class="srow" id="rowStab"><div class="grow"><div class="t" data-i18n="stab"></div><div class="s" data-i18n="stab_sub"></div></div>
+        <input type="checkbox" class="switch" id="tStab"></label>
+    </div>
+
+    <!-- Relay server for watching over 4G, typed here and sent to the camera phone (old phones are awkward to type on) -->
+    <div id="camTurnBox" hidden>
+      <p class="sgroup-title" data-i18n="g_cam_turn"></p>
+      <div class="sgroup">
+        <div class="srow"><div class="grow"><div class="t" data-i18n="cam_turn_now"></div><div class="s" id="camTurnStatus"></div></div></div>
+        <label class="srow field"><span data-i18n="relay_url"></span>
+          <input id="camTurnUrl" type="text" autocapitalize="off" spellcheck="false" data-i18n-ph="relay_url_ph"></label>
+        <label class="srow field"><span data-i18n="relay_user"></span><input id="camTurnUser" type="text" autocapitalize="off" spellcheck="false"></label>
+        <label class="srow field"><span data-i18n="relay_pass"></span><input id="camTurnPass" type="password" data-i18n-ph="cam_turn_pass_ph"></label>
+        <div class="srow btns">
+          <button type="button" class="sbtn" id="camTurnFill" data-i18n="cam_turn_fill"></button>
+          <button type="button" class="sbtn primary" id="camTurnSend" data-i18n="cam_turn_send"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Heat protection runs on the camera phone; these change its settings (cameras on older versions don't send them) -->
+    <div id="heatGroupBox" hidden>
+      <p class="sgroup-title" data-i18n="g_heat"></p>
+      <div class="sgroup">
+        <label class="srow"><div class="grow"><div class="t" data-i18n="heat_guard"></div><div class="s" data-i18n="heat_guard_sub"></div></div>
+          <input type="checkbox" class="switch" id="tHeat"></label>
+        <div class="srow col" id="rowHeatStart"><div class="head"><div class="t" data-i18n="heat_start"></div><b class="v" id="heatStartVal"></b></div>
+          <input type="range" class="srange" id="heatStart" min="38" max="52" step="1" value="44">
+          <div class="s" data-i18n="heat_start_sub"></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Order matters: plain scripts (not ES modules) so the page also works when opened straight from disk -->
+<script src="js/i18n.js"></script>
+<script src="js/config.js"></script>
+<script src="js/crypto.js"></script>
+<script src="js/mqtt.js"></script>
+<script src="js/signaling.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/viewer.js"></script>
+<script src="js/overlay.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/netcheck.js"></script>
+<script src="js/gestures.js"></script>
+<script src="js/qr.js"></script>
+<script src="js/share.js"></script>
+<script src="js/snapshot.js"></script>
+<script src="js/cams.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

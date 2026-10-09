@@ -1,0 +1,23 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    attributes: { label: What happened?, description: Steps to reproduce and what you expected. }
+    validations: { required: true }
+  - type: dropdown
+    attributes:
+      label: Where?
+      options: [Camera phone (app), Viewer (app), Viewer (browser), Not sure]
+    validations: { required: true }
+  - type: input
+    attributes: { label: Phone model and Android version, placeholder: "Pixel 5, Android 14" }
+    validations: { required: true }
+  - type: input
+    attributes: { label: App version, placeholder: "3.0.0" }
+  - type: dropdown
+    attributes:
+      label: Network of the viewer
+      options: [Same Wi-Fi, Other Wi-Fi, 4G/5G, 4G/5G with relay server, Not sure]
+  - type: textarea
+    attributes: { label: Crash details or logs, description: "From the crash dialog (Copy details) or `adb logcat`.", render: text }

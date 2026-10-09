@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text field row: icon, small label, input, optional trailing actions -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:minHeight="64dp" android:orientation="horizontal" android:gravity="center_vertical"
+    android:paddingStart="20dp" android:paddingEnd="12dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+
+    <ImageView android:id="@+id/icon" android:layout_width="24dp" android:layout_height="24dp"
+        android:tint="@color/text2" android:importantForAccessibility="no" />
+
+    <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+        android:layout_marginStart="20dp" android:orientation="vertical">
+        <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textColor="@color/text2" android:textSize="13sp" />
+        <EditText android:id="@+id/edit" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@null" android:paddingTop="2dp" android:paddingBottom="2dp" android:importantForAutofill="no"
+            android:textColor="@color/text" android:textColorHint="@color/text2" android:textSize="16sp" android:singleLine="true" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/actions" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" />
+</LinearLayout>

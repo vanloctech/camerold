@@ -1,0 +1,24 @@
+{
+  "protocol": "camerold-v2",
+  "pbkdf2Iterations": 600000,
+  "vectors": [
+    {
+      "room": "k7m2pq9xha",
+      "password": "Kq7vW2xZpR9mTn4sYb8H",
+      "aad": "camerold/v2/x/c",
+      "plaintext": "{\"t\":\"hello\",\"id\":\"abcdefgh1234\",\"ts\":1700000000000}",
+      "topic": "camerold/v2/78e9589b129d9a182d1c355ca128fd95",
+      "encKey": "f9961328b53202c30ac772d60ea2b93d1f8bb0928bc3dc604c51b7614cf1c26f",
+      "packet": "000102030405060708090a0b917ff0a4a4b6b9f9325c1698e1158f543329d41d278224152db04bc31a7bd6abbfdd6a5e69d2e2c4249d32695ed490f875ed7b58f87ffdc1bdfe6dfb977e26e4e5b7762b"
+    },
+    {
+      "room": "testcam42",
+      "password": "mật khẩu Việt 123 ✓",
+      "aad": "camerold/v2/y/v/viewer1",
+      "plaintext": "{\"t\":\"offer\",\"sdp\":\"v=0\",\"x\":\"Xin chào\"}",
+      "topic": "camerold/v2/98ccb5870cfc838a832ae768613fb2dc",
+      "encKey": "91b02532d2aa8c947cae085573e432c0682e955ce6702b212cbc2b1f7eec0710",
+      "packet": "ffeeddccbbaa99887766554443de53f24760b1bd3996bc4cd89ce48cdd01f193a8c7079d49067cdd29524137fa35af1e444e3f480efa5286e9ec28fe27b8b10b107a917cc6"
+    }
+  ]
+}

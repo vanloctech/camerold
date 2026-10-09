@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <!-- Camerold logo: a phone whose screen is a camera lens. Source of truth for the app and web icons. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5A8FFF"/><stop offset="1" stop-color="#1E4ED8"/></linearGradient>
+    <radialGradient id="glass" cx="52" cy="51.5" r="8.5" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3D7BFF"/><stop offset=".6" stop-color="#1A3C9E"/><stop offset="1" stop-color="#0E2361"/></radialGradient>
+  </defs>
+  <rect width="108" height="108" rx="30" fill="url(#bg)"/>
+  <g transform="translate(54 54) scale(1.05) translate(-54 -54)">
+    <rect x="36" y="27" width="36" height="54" rx="9" fill="none" stroke="#fff" stroke-width="5"/>
+    <circle cx="54" cy="54" r="11" fill="#fff"/>
+    <circle cx="54" cy="54" r="6.5" fill="url(#glass)"/>
+    <circle cx="51.8" cy="51.8" r="1.8" fill="#fff" fill-opacity=".9"/>
+  </g>
+</svg>

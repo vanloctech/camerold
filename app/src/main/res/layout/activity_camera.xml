@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+        <include layout="@layout/topbar" />
+
+        <ScrollView android:id="@+id/scroll" android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="16dp"
+                android:animateLayoutChanges="true">
+
+                <!-- Preview with the live status on top of it -->
+                <FrameLayout android:id="@+id/previewBox" android:layout_width="match_parent" android:layout_height="240dp"
+                    android:background="#000000">
+                    <org.webrtc.SurfaceViewRenderer android:id="@+id/preview"
+                        android:layout_width="match_parent" android:layout_height="match_parent" />
+                    <!-- Placeholder until the first frame is drawn: idle / opening camera (pulsing) -->
+                    <LinearLayout android:id="@+id/previewHint" android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:background="@drawable/bg_preview_empty" android:gravity="center" android:orientation="vertical"
+                        android:padding="24dp">
+                        <FrameLayout android:layout_width="96dp" android:layout_height="96dp">
+                            <View android:id="@+id/previewRing1" android:layout_width="56dp" android:layout_height="56dp"
+                                android:layout_gravity="center" android:background="@drawable/bg_preview_ring" android:alpha="0" />
+                            <View android:id="@+id/previewRing2" android:layout_width="56dp" android:layout_height="56dp"
+                                android:layout_gravity="center" android:background="@drawable/bg_preview_ring" android:alpha="0" />
+                            <ImageView android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
+                                android:padding="15dp" android:background="@drawable/bg_preview_icon" android:src="@drawable/ic_camera"
+                                android:tint="#FFFFFFFF" android:importantForAccessibility="no" />
+                        </FrameLayout>
+                        <TextView android:id="@+id/previewTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp" android:textColor="#FFFFFFFF" android:textSize="16sp"
+                            android:fontFamily="sans-serif-medium" android:text="@string/preview_title" />
+                        <TextView android:id="@+id/previewSub" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp" android:gravity="center" android:textColor="#B3FFFFFF" android:textSize="13sp"
+                            android:text="@string/preview_hint" />
+                    </LinearLayout>
+                    <vn.camerold.ui.CornerMask android:layout_width="match_parent" android:layout_height="match_parent" />
+                    <!-- Status chip: dot + text (connecting, ready, viewers, no internet…) -->
+                    <LinearLayout android:id="@+id/statusChip" android:layout_width="wrap_content" android:layout_height="32dp"
+                        android:layout_margin="12dp" android:background="@drawable/bg_chip" android:orientation="horizontal"
+                        android:gravity="center_vertical" android:paddingStart="12dp" android:paddingEnd="14dp">
+                        <View android:id="@+id/statusDot" android:layout_width="8dp" android:layout_height="8dp"
+                            android:background="@drawable/bg_dot" android:backgroundTint="#FFB0B0B0" />
+                        <TextView android:id="@+id/status" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp" android:maxWidth="260dp" android:singleLine="true" android:ellipsize="end"
+                            android:textColor="#FFFFFFFF" android:textSize="13sp" android:fontFamily="sans-serif-medium"
+                            android:text="@string/status_idle" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- Current camera settings, tap to change -->
+                <LinearLayout android:id="@+id/settingsLine" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:minHeight="48dp" android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="4dp" android:paddingEnd="4dp" android:background="@drawable/bg_row">
+                    <TextView android:id="@+id/settingsSummary" android:layout_width="0dp" android:layout_weight="1"
+                        android:layout_height="wrap_content" android:textColor="@color/text2" android:textSize="14sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/accent" android:textSize="14sp" android:fontFamily="sans-serif-medium"
+                        android:text="@string/change" />
+                </LinearLayout>
+
+                <!-- Shown only when something needs fixing (e.g. background running not allowed) -->
+                <LinearLayout android:id="@+id/banner" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:background="@drawable/bg_banner" android:orientation="horizontal"
+                    android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="8dp"
+                    android:paddingTop="12dp" android:paddingBottom="12dp" android:visibility="gone">
+                    <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_warn"
+                        android:tint="@color/warn" android:importantForAccessibility="no" />
+                    <TextView android:id="@+id/bannerText" android:layout_width="0dp" android:layout_weight="1"
+                        android:layout_height="wrap_content" android:layout_marginStart="12dp"
+                        android:textColor="@color/text" android:textSize="14sp" />
+                    <Button android:id="@+id/bannerBtn" android:layout_width="wrap_content" android:layout_height="40dp"
+                        android:background="@drawable/bg_round_ripple" android:minWidth="0dp" android:paddingStart="12dp"
+                        android:paddingEnd="12dp" android:stateListAnimator="@null" android:textAllCaps="false"
+                        android:textColor="@color/accent" android:textSize="14sp" android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <TextView style="@style/SectionTitle" android:text="@string/section_connect" />
+                <LinearLayout android:id="@+id/groupConn" style="@style/Card" />
+                <TextView style="@style/Note" android:text="@string/connect_note" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Main action within thumb reach; "screen off" appears while streaming -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"
+            android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp"
+            android:paddingTop="8dp" android:paddingBottom="16dp">
+            <ImageButton android:id="@+id/btnDim" android:layout_width="56dp" android:layout_height="56dp"
+                android:layout_marginEnd="12dp" android:background="@drawable/bg_tonal" android:padding="16dp"
+                android:src="@drawable/ic_screen_off" android:tint="@color/accent" android:visibility="gone"
+                android:contentDescription="@string/row_dim" />
+            <LinearLayout android:id="@+id/btnStart" android:layout_width="0dp" android:layout_weight="1" android:layout_height="56dp"
+                android:background="@drawable/bg_pill" android:clickable="true" android:focusable="true"
+                android:orientation="horizontal" android:gravity="center">
+                <ImageView android:id="@+id/btnIcon" android:layout_width="22dp" android:layout_height="22dp"
+                    android:src="@drawable/ic_play" android:tint="@color/on_accent" android:importantForAccessibility="no" />
+                <TextView android:id="@+id/btnText" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp" android:textColor="@color/on_accent" android:textSize="17sp"
+                    android:fontFamily="sans-serif-medium" android:text="@string/btn_start" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView android:id="@+id/blackOverlay" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="#000000" android:visibility="gone" android:gravity="center"
+        android:textColor="#303030" android:text="@string/dim_overlay" />
+</FrameLayout>

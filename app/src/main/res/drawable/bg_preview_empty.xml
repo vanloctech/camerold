@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark preview placeholder with soft colour glows (matches the web viewer's waiting screen) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><color android:color="#FF07090E" /></item>
+    <item>
+        <shape>
+            <gradient android:type="radial" android:centerX="0.28" android:centerY="0.3" android:gradientRadius="70%p"
+                android:startColor="#5C4B8DFF" android:endColor="#004B8DFF" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <gradient android:type="radial" android:centerX="0.78" android:centerY="0.75" android:gradientRadius="60%p"
+                android:startColor="#3D2FB36A" android:endColor="#002FB36A" />
+        </shape>
+    </item>
+</layer-list>

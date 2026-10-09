@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+
+    <!-- App bar: name + settings -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp" android:orientation="horizontal"
+        android:gravity="center_vertical" android:paddingStart="20dp" android:paddingEnd="4dp">
+        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:textColor="@color/text" android:textSize="22sp" android:fontFamily="sans-serif-medium"
+            android:text="@string/app_name" />
+        <ImageButton android:id="@+id/btnSettings" style="@style/BarButton" android:src="@drawable/ic_settings"
+            android:contentDescription="@string/settings_title" />
+    </LinearLayout>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="24dp">
+
+            <TextView style="@style/Headline" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" android:paddingStart="4dp" android:text="@string/home_question" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"
+                android:paddingStart="4dp" android:textColor="@color/text2" android:textSize="15sp"
+                android:text="@string/home_question_sub" />
+
+            <!-- Shown only while this phone is streaming -->
+            <LinearLayout android:id="@+id/runningCard" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" android:background="@drawable/bg_tile" android:orientation="horizontal"
+                android:gravity="center_vertical" android:padding="18dp" android:visibility="gone">
+                <View android:layout_width="10dp" android:layout_height="10dp" android:background="@drawable/bg_dot"
+                    android:backgroundTint="@color/ok" />
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp" android:textColor="@color/text" android:textSize="16sp"
+                    android:text="@string/home_running" />
+                <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_chevron"
+                    android:tint="@color/text2" android:importantForAccessibility="no" />
+            </LinearLayout>
+
+            <!-- The two roles -->
+            <LinearLayout android:id="@+id/tileCamera" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" android:background="@drawable/bg_tile" android:orientation="vertical"
+                android:padding="20dp">
+                <ImageView android:layout_width="48dp" android:layout_height="48dp" android:padding="12dp"
+                    android:background="@drawable/bg_icon_tile" android:src="@drawable/ic_camera" android:tint="@color/accent"
+                    android:importantForAccessibility="no" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                    android:textColor="@color/text" android:textSize="18sp" android:fontFamily="sans-serif-medium"
+                    android:text="@string/home_camera_title" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                    android:textColor="@color/text2" android:textSize="14sp" android:text="@string/home_camera_sub" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/tileViewer" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" android:background="@drawable/bg_tile" android:orientation="vertical"
+                android:padding="20dp">
+                <ImageView android:layout_width="48dp" android:layout_height="48dp" android:padding="12dp"
+                    android:background="@drawable/bg_icon_tile" android:src="@drawable/ic_eye" android:tint="@color/accent"
+                    android:importantForAccessibility="no" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                    android:textColor="@color/text" android:textSize="18sp" android:fontFamily="sans-serif-medium"
+                    android:text="@string/home_viewer_title" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                    android:textColor="@color/text2" android:textSize="14sp" android:text="@string/home_viewer_sub" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

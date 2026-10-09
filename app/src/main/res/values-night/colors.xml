@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#0E1014</color>
+    <color name="card">#1A1D23</color>
+    <color name="text">#ECEEF2</color>
+    <color name="text2">#9AA1AD</color>
+    <color name="line">#1AFFFFFF</color>
+    <color name="accent">#5B8DFF</color>
+    <color name="accent_soft">#295B8DFF</color>
+    <color name="warn">#F0A030</color>
+    <color name="warn_soft">#26F5A524</color>
+    <color name="ripple">#1FFFFFFF</color>
+</resources>
