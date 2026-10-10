@@ -5,6 +5,7 @@
     <include layout="@layout/topbar" />
     <ScrollView android:id="@+id/scroll" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
         <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="32dp" />
+            android:orientation="vertical" android:paddingStart="@dimen/screen_pad" android:paddingEnd="@dimen/screen_pad"
+            android:paddingBottom="32dp" />
     </ScrollView>
 </LinearLayout>

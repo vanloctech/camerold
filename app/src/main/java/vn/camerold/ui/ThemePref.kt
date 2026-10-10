@@ -69,6 +69,25 @@ open class BaseActivity : Activity() {
         if (currentLook() != look) recreate()
     }
 
+    /**
+     * From Android 15 apps are drawn edge to edge (behind the status and navigation bars). Pad the content by the bars,
+     * the display cutout and the keyboard so nothing hides behind them. The window background shows through the bars.
+     * Hidden bars (full screen) report no inset, so full-screen content still uses the whole screen.
+     */
+    override fun onPostCreate(savedInstanceState: android.os.Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        if (android.os.Build.VERSION.SDK_INT < 35) return
+        val root = findViewById<android.view.View>(android.R.id.content)
+        root.setOnApplyWindowInsetsListener { v, insets ->
+            val t = android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout() or
+                android.view.WindowInsets.Type.ime()
+            val b = insets.getInsets(t)
+            v.setPadding(b.left, b.top, b.right, b.bottom)
+            insets
+        }
+        root.requestApplyInsets()
+    }
+
     /** Top app bar from layout/topbar.xml: back arrow, title and an optional action icon. */
     protected fun topBar(title: Int, actionIcon: Int = 0, actionLabel: Int = 0, action: (() -> Unit)? = null) {
         findViewById<android.view.View>(R.id.barBack).setOnClickListener { finish() }

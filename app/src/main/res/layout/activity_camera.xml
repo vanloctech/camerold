@@ -7,8 +7,8 @@
 
         <ScrollView android:id="@+id/scroll" android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1">
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="16dp"
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"
+                android:paddingStart="@dimen/screen_pad" android:paddingEnd="@dimen/screen_pad" android:paddingBottom="16dp"
                 android:animateLayoutChanges="true">
 
                 <!-- Preview with the live status on top of it -->
@@ -26,15 +26,15 @@
                             <View android:id="@+id/previewRing2" android:layout_width="56dp" android:layout_height="56dp"
                                 android:layout_gravity="center" android:background="@drawable/bg_preview_ring" android:alpha="0" />
                             <ImageView android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
-                                android:padding="15dp" android:background="@drawable/bg_preview_icon" android:src="@drawable/ic_camera"
+                                android:padding="16dp" android:background="@drawable/bg_preview_icon" android:src="@drawable/ic_camera"
                                 android:tint="#FFFFFFFF" android:importantForAccessibility="no" />
                         </FrameLayout>
-                        <TextView android:id="@+id/previewTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp" android:textColor="#FFFFFFFF" android:textSize="16sp"
-                            android:fontFamily="sans-serif-medium" android:text="@string/preview_title" />
-                        <TextView android:id="@+id/previewSub" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp" android:gravity="center" android:textColor="#B3FFFFFF" android:textSize="13sp"
-                            android:text="@string/preview_hint" />
+                        <TextView android:id="@+id/previewTitle" style="@style/T.TileTitle" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="#FFFFFFFF"
+                            android:text="@string/preview_title" />
+                        <TextView android:id="@+id/previewSub" style="@style/T.Caption" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginTop="6dp" android:gravity="center"
+                            android:textColor="#B3FFFFFF" android:text="@string/preview_hint" />
                     </LinearLayout>
                     <vn.camerold.ui.CornerMask android:layout_width="match_parent" android:layout_height="match_parent" />
                     <!-- Status chip: dot + text (connecting, ready, viewers, no internet…) -->
@@ -43,62 +43,60 @@
                         android:gravity="center_vertical" android:paddingStart="12dp" android:paddingEnd="14dp">
                         <View android:id="@+id/statusDot" android:layout_width="8dp" android:layout_height="8dp"
                             android:background="@drawable/bg_dot" android:backgroundTint="#FFB0B0B0" />
-                        <TextView android:id="@+id/status" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp" android:maxWidth="260dp" android:singleLine="true" android:ellipsize="end"
-                            android:textColor="#FFFFFFFF" android:textSize="13sp" android:fontFamily="sans-serif-medium"
-                            android:text="@string/status_idle" />
+                        <TextView android:id="@+id/status" style="@style/T.Caption" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="8dp" android:maxWidth="260dp"
+                            android:singleLine="true" android:ellipsize="end" android:textColor="#FFFFFFFF"
+                            android:fontFamily="sans-serif-medium" android:text="@string/status_idle" />
                     </LinearLayout>
                 </FrameLayout>
 
-                <!-- Current camera settings, tap to change -->
-                <LinearLayout android:id="@+id/settingsLine" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp" android:minHeight="48dp" android:orientation="horizontal" android:gravity="center_vertical"
-                    android:paddingStart="4dp" android:paddingEnd="4dp" android:background="@drawable/bg_row">
-                    <TextView android:id="@+id/settingsSummary" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:textColor="@color/text2" android:textSize="14sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:textColor="@color/accent" android:textSize="14sp" android:fontFamily="sans-serif-medium"
-                        android:text="@string/change" />
-                </LinearLayout>
-
                 <!-- Shown only when something needs fixing (e.g. background running not allowed) -->
                 <LinearLayout android:id="@+id/banner" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp" android:background="@drawable/bg_banner" android:orientation="horizontal"
-                    android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="8dp"
-                    android:paddingTop="12dp" android:paddingBottom="12dp" android:visibility="gone">
-                    <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_warn"
+                    android:layout_marginTop="12dp" android:minHeight="@dimen/row_min" android:background="@drawable/bg_banner"
+                    android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="@dimen/card_pad"
+                    android:paddingEnd="8dp" android:paddingTop="12dp" android:paddingBottom="12dp" android:visibility="gone">
+                    <ImageView android:layout_width="@dimen/icon" android:layout_height="@dimen/icon" android:src="@drawable/ic_warn"
                         android:tint="@color/warn" android:importantForAccessibility="no" />
-                    <TextView android:id="@+id/bannerText" android:layout_width="0dp" android:layout_weight="1"
-                        android:layout_height="wrap_content" android:layout_marginStart="12dp"
-                        android:textColor="@color/text" android:textSize="14sp" />
+                    <TextView android:id="@+id/bannerText" style="@style/T.Value" android:layout_width="0dp" android:layout_weight="1"
+                        android:layout_height="wrap_content" android:layout_marginStart="@dimen/icon_gap" android:textColor="@color/text" />
                     <Button android:id="@+id/bannerBtn" android:layout_width="wrap_content" android:layout_height="40dp"
                         android:background="@drawable/bg_round_ripple" android:minWidth="0dp" android:paddingStart="12dp"
                         android:paddingEnd="12dp" android:stateListAnimator="@null" android:textAllCaps="false"
                         android:textColor="@color/accent" android:textSize="14sp" android:fontFamily="sans-serif-medium" />
                 </LinearLayout>
 
+                <!-- Quick tiles -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="140dp" android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/tileQr" layout="@layout/tile" />
+                    <View android:layout_width="12dp" android:layout_height="match_parent" />
+                    <include android:id="@+id/tileSound" layout="@layout/tile" />
+                </LinearLayout>
+
                 <TextView style="@style/SectionTitle" android:text="@string/section_connect" />
                 <LinearLayout android:id="@+id/groupConn" style="@style/Card" />
-                <TextView style="@style/Note" android:text="@string/connect_note" />
+
+                <TextView style="@style/SectionTitle" android:text="@string/section_camera" />
+                <LinearLayout android:id="@+id/groupCam" style="@style/Card" />
             </LinearLayout>
         </ScrollView>
 
         <!-- Main action within thumb reach; "screen off" appears while streaming -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"
-            android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp"
+            android:gravity="center_vertical" android:paddingStart="@dimen/screen_pad" android:paddingEnd="@dimen/screen_pad"
             android:paddingTop="8dp" android:paddingBottom="16dp">
             <ImageButton android:id="@+id/btnDim" android:layout_width="56dp" android:layout_height="56dp"
                 android:layout_marginEnd="12dp" android:background="@drawable/bg_tonal" android:padding="16dp"
-                android:src="@drawable/ic_screen_off" android:tint="@color/accent" android:visibility="gone"
+                android:src="@drawable/ic_screen_off" android:tint="@color/text" android:visibility="gone"
                 android:contentDescription="@string/row_dim" />
             <LinearLayout android:id="@+id/btnStart" android:layout_width="0dp" android:layout_weight="1" android:layout_height="56dp"
                 android:background="@drawable/bg_pill" android:clickable="true" android:focusable="true"
                 android:orientation="horizontal" android:gravity="center">
                 <ImageView android:id="@+id/btnIcon" android:layout_width="22dp" android:layout_height="22dp"
                     android:src="@drawable/ic_play" android:tint="@color/on_accent" android:importantForAccessibility="no" />
-                <TextView android:id="@+id/btnText" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp" android:textColor="@color/on_accent" android:textSize="17sp"
-                    android:fontFamily="sans-serif-medium" android:text="@string/btn_start" />
+                <TextView android:id="@+id/btnText" style="@style/T.TileTitle" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:layout_marginStart="10dp" android:textColor="@color/on_accent"
+                    android:textSize="17sp" android:text="@string/btn_start" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

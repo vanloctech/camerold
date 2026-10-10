@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy policy · Camerold</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root { color-scheme: light dark; --bg: #f4f5f7; --card: #fff; --text: #15171c; --text2: #5f6672; --accent: #2e6bf0; --line: rgba(0,0,0,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0e1014; --card: #1a1d23; --text: #eceef2; --text2: #9aa1ad; --accent: #5b8dff; --line: rgba(255,255,255,.1); } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  header img { width: 40px; height: 40px; border-radius: 11px; }
+  h1 { font-size: 28px; margin: 0; }
+  h2 { font-size: 19px; margin: 28px 0 8px; }
+  .card { background: var(--card); border-radius: 18px; padding: 8px 24px 24px; margin-top: 20px; }
+  .muted { color: var(--text2); font-size: 14px; }
+  a { color: var(--accent); }
+  nav { font-size: 14px; margin: 4px 0 0; }
+  ul { padding-left: 22px; }
+</style>
+</head>
+<body>
+<main>
+  <header><img src="icon.svg" alt=""><h1>Camerold</h1></header>
+  <nav><a href="#en">English</a> · <a href="#vi">Tiếng Việt</a></nav>
+
+  <section class="card" id="en">
+    <h2>Privacy policy</h2>
+    <p class="muted">Last updated: October 10, 2026 · App: Camerold (com.vanloctech.camerold)</p>
+    <p>Camerold turns an Android phone into a live camera that you watch from another phone or a web browser.
+      It is open source: <a href="https://github.com/vanloctech/camerold">github.com/vanloctech/camerold</a>.</p>
+
+    <h2>Summary</h2>
+    <ul>
+      <li>The developer does <b>not</b> collect, store, sell or share any of your data. There is no account, no
+        advertising and no analytics.</li>
+      <li>Video and sound go <b>directly</b> from the camera phone to the devices watching it, end‑to‑end encrypted.</li>
+      <li>Nothing is recorded by the app.</li>
+    </ul>
+
+    <h2>Camera and microphone</h2>
+    <p>On the phone used as a camera, Camerold uses the camera and (if you allow it) the microphone to stream live
+      video and sound, only while you have started streaming. This continues in the background, with a persistent
+      notification, until you stop it. The picture and sound are sent only to devices that know the camera code and
+      password you chose, using WebRTC with DTLS‑SRTP encryption.</p>
+    <p>On a viewing device, the camera is used only to scan a QR code when you choose to; the image never leaves the device.</p>
+
+    <h2>Network services the app talks to</h2>
+    <ul>
+      <li><b>Signaling servers (MQTT brokers)</b>: before a stream starts, the devices exchange small messages through
+        public MQTT servers (by default EMQX, HiveMQ, Eclipse Mosquitto and shiftr.io) or a server you configure.
+        These messages are encrypted with a key derived from your camera password, so the servers can't read them.
+        Like any internet service, they can see IP addresses and connection times.</li>
+      <li><b>STUN servers</b> (Google, Cloudflare) help the devices find a direct route; they see IP addresses only.</li>
+      <li><b>Relay (TURN) server</b>: only if you configure one. It forwards encrypted media it can't decrypt.</li>
+    </ul>
+    <p>These services are run by third parties under their own policies. Camerold sends them no personal information
+      beyond what is technically needed to connect.</p>
+
+    <h2>Data stored on your devices</h2>
+    <p>Settings (camera code, password, names of saved cameras, server details, preferences) are stored only on your
+      devices, in the app's private storage or the browser's local storage. Snapshots you take are saved to your
+      gallery or downloads folder. Uninstalling the app or clearing site data removes the stored settings.
+      If the app crashes, a report is kept on the device and shown to you; it is shared only if you copy it yourself.</p>
+
+    <h2>Children</h2>
+    <p>Camerold is not directed at children and does not knowingly collect data from anyone.</p>
+
+    <h2>Changes and contact</h2>
+    <p>Changes to this policy are published on this page. Questions: open an issue at
+      <a href="https://github.com/vanloctech/camerold/issues">github.com/vanloctech/camerold/issues</a>.</p>
+  </section>
+
+  <section class="card" id="vi" lang="vi">
+    <h2>Chính sách quyền riêng tư</h2>
+    <p class="muted">Cập nhật: 10/10/2026 · Ứng dụng: Camerold (com.vanloctech.camerold)</p>
+    <p>Camerold biến điện thoại Android thành camera xem trực tiếp từ điện thoại khác hoặc trình duyệt. Mã nguồn mở:
+      <a href="https://github.com/vanloctech/camerold">github.com/vanloctech/camerold</a>.</p>
+
+    <h2>Tóm tắt</h2>
+    <ul>
+      <li>Nhà phát triển <b>không</b> thu thập, lưu trữ, bán hay chia sẻ bất kỳ dữ liệu nào của bạn. Không có tài khoản,
+        không quảng cáo, không thống kê sử dụng.</li>
+      <li>Hình và tiếng đi <b>thẳng</b> từ máy camera tới các máy đang xem, được mã hoá đầu‑cuối.</li>
+      <li>Ứng dụng không ghi hình.</li>
+    </ul>
+
+    <h2>Camera và micro</h2>
+    <p>Trên máy dùng làm camera, Camerold dùng camera và (nếu bạn cho phép) micro để phát hình và tiếng trực tiếp, chỉ
+      khi bạn đã bấm bắt đầu phát. Việc phát tiếp tục khi chạy nền, kèm thông báo thường trực, cho đến khi bạn dừng. Hình
+      và tiếng chỉ được gửi tới các máy biết mã camera và mật khẩu do bạn đặt, qua WebRTC mã hoá DTLS‑SRTP.</p>
+    <p>Trên máy xem, camera chỉ được dùng để quét mã QR khi bạn chọn; hình ảnh không rời khỏi máy.</p>
+
+    <h2>Các dịch vụ mạng ứng dụng kết nối</h2>
+    <ul>
+      <li><b>Máy chủ kết nối (MQTT)</b>: trước khi phát, hai máy trao đổi vài tin nhắn nhỏ qua các máy chủ MQTT công
+        cộng (mặc định EMQX, HiveMQ, Eclipse Mosquitto, shiftr.io) hoặc máy chủ bạn tự cấu hình. Tin nhắn được mã hoá
+        bằng khoá tạo từ mật khẩu camera nên máy chủ không đọc được. Như mọi dịch vụ Internet, chúng thấy được địa chỉ
+        IP và thời điểm kết nối.</li>
+      <li><b>Máy chủ STUN</b> (Google, Cloudflare) giúp hai máy tìm đường kết nối thẳng; chỉ thấy địa chỉ IP.</li>
+      <li><b>Máy chủ chuyển tiếp (TURN)</b>: chỉ khi bạn tự cấu hình; nó chuyển dữ liệu đã mã hoá mà không giải mã được.</li>
+    </ul>
+    <p>Các dịch vụ này do bên thứ ba vận hành theo chính sách riêng của họ. Camerold không gửi cho họ thông tin cá nhân
+      nào ngoài những gì kỹ thuật cần để kết nối.</p>
+
+    <h2>Dữ liệu lưu trên thiết bị của bạn</h2>
+    <p>Cài đặt (mã camera, mật khẩu, tên các camera đã lưu, thông tin máy chủ, tuỳ chọn) chỉ lưu trên thiết bị của bạn,
+      trong bộ nhớ riêng của ứng dụng hoặc bộ nhớ của trình duyệt. Ảnh bạn chụp được lưu vào thư viện ảnh hoặc thư mục tải
+      về. Gỡ ứng dụng hoặc xoá dữ liệu trang web sẽ xoá các cài đặt này. Khi ứng dụng gặp lỗi, báo cáo lỗi được giữ trên
+      máy và hiện cho bạn xem; chỉ được chia sẻ nếu bạn tự sao chép.</p>
+
+    <h2>Trẻ em</h2>
+    <p>Camerold không hướng tới trẻ em và không cố ý thu thập dữ liệu của bất kỳ ai.</p>
+
+    <h2>Thay đổi và liên hệ</h2>
+    <p>Mọi thay đổi chính sách được đăng trên trang này. Câu hỏi: tạo issue tại
+      <a href="https://github.com/vanloctech/camerold/issues">github.com/vanloctech/camerold/issues</a>.</p>
+  </section>
+</main>
+</body>
+</html>

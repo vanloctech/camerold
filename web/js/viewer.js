@@ -472,6 +472,8 @@ function setFullscreen(on) {
 /** In the app: turning the phone sideways while watching enters full screen (and back), like YouTube. */
 function appWatching(on) {
   if (IN_APP && window.CameroldApp?.setWatching) { try { CameroldApp.setWatching(on); } catch {} }
+  // Black system bars under the video, page-colored ones on the lists and settings
+  if (IN_APP && window.CameroldApp?.setDarkBars) { try { CameroldApp.setDarkBars(on); } catch {} }
 }
 window.onAppFullscreen = on => { S.fs = !!on; updateMode(); };
 document.addEventListener('fullscreenchange', () => { S.fs = !!document.fullscreenElement; updateMode(); });

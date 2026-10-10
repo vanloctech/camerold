@@ -32,6 +32,17 @@ class SettingsActivity : BaseActivity() {
             }
         }.value(langName(LangPref.get(this)))
 
+        // Only in the GitHub build: Google Play doesn't allow links to personal donation pages
+        if (vn.camerold.BuildConfig.DONATION_LINKS) {
+            val support = rows.section(content, R.string.section_support)
+            fun open(url: String) = startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+            rows.row(support, R.drawable.ic_heart, R.string.support_sponsors) { open(getString(R.string.url_sponsors)) }
+                .value(getString(R.string.support_sponsors_sub))
+            rows.row(support, R.drawable.ic_coffee, R.string.support_coffee) { open(getString(R.string.url_coffee)) }
+                .value(getString(R.string.support_coffee_sub))
+            rows.note(content, getString(R.string.support_note))
+        }
+
         val about = rows.section(content, R.string.section_about)
         val version = packageManager.getPackageInfo(packageName, 0).versionName
         rows.row(about, R.drawable.ic_info, R.string.about_version).value(version)
@@ -42,6 +53,9 @@ class SettingsActivity : BaseActivity() {
                 .setPositiveButton(R.string.close, null)
                 .show()
         }.value(getString(R.string.about_licenses_sub))
+        rows.row(about, R.drawable.ic_external, R.string.about_privacy) {
+            startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(getString(R.string.privacy_url))))
+        }
         rows.note(content, getString(R.string.home_footer))
     }
 }

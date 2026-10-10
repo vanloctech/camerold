@@ -7,6 +7,8 @@ Camerold has two parts that talk to each other only through an encrypted signali
 
 ## Android app
 
+The app is installed as `com.vanloctech.camerold` (applicationId); the Kotlin code lives in the `vn.camerold` packages (namespace).
+
 | Package | Responsibility |
 |---|---|
 | `vn.camerold.ui` | Activities: `MainActivity` (home: pick a role), `SettingsActivity` (theme, language, about), `CameraActivity` (preview, status, how viewers connect, start/stop), `CameraSettingsActivity` (picture, sound, 4G relay, background running, advanced), `ViewerActivity` (WebView hosting `web/`). `BaseActivity` applies theme (`ThemePref`) and language (`LangPref`); `Rows` builds the grouped settings lists; `QrCode` draws the QR code. |

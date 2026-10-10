@@ -4,16 +4,16 @@ plugins {
 }
 
 android {
-    namespace = "vn.camerold"
-    compileSdk = 35
+    namespace = "vn.camerold" // Kotlin package of the code; the installed app's id is applicationId below
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "vn.camerold"
+        applicationId = "com.vanloctech.camerold"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36 // Google Play: new apps and updates must target Android 16 (API 36) from 31 Aug 2026
         // Release builds on CI take the version from the git tag (v3.2.0 -> 3.2.0, see .github/workflows/release.yml);
         // local builds use the version below. versionCode is derived from it, so it always goes up with the version.
-        val version = System.getenv("RELEASE_VERSION")?.takeIf { it.isNotBlank() } ?: "3.2.0"
+        val version = System.getenv("RELEASE_VERSION")?.takeIf { it.isNotBlank() } ?: "3.3.0"
         versionName = version
         versionCode = versionCodeOf(version)
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
@@ -28,6 +28,20 @@ android {
     }
 
     buildFeatures { buildConfig = true }
+
+    // Two builds of the same app (same package): GitHub Releases / sideloading, and Google Play.
+    // Play's payments policy doesn't allow links to personal donation pages, so only the GitHub build shows them.
+    flavorDimensions += "store"
+    productFlavors {
+        create("github") {
+            dimension = "store"
+            buildConfigField("boolean", "DONATION_LINKS", "true")
+        }
+        create("play") {
+            dimension = "store"
+            buildConfigField("boolean", "DONATION_LINKS", "false")
+        }
+    }
     // Generates the Android 13+ locale list from the same resource folders (see res/resources.properties)
     androidResources { generateLocaleConfig = true }
 

@@ -14,7 +14,8 @@ Thanks for helping! Issues and pull requests in **English or Vietnamese** are bo
 ## Development setup
 
 - JDK 17, Android SDK platform 35, Node.js 20+.
-- `./gradlew assembleDebug` builds the app; `./gradlew testDebugUnitTest` runs Kotlin tests.
+- `./gradlew assembleGithubDebug` builds the app; `./gradlew testGithubDebugUnitTest` runs Kotlin tests.
+- Two flavors share all the code: `github` (APKs on GitHub Releases) and `play` (Google Play bundle, without donation links).
 - `node --test tests/*.test.mjs` runs the web viewer tests.
 - `python3 -m http.server -d web 8080` serves the viewer at http://localhost:8080 for quick UI work
   (WebCrypto needs a secure context: `localhost` or `https`).
@@ -32,9 +33,14 @@ To test end to end you need one Android phone as the camera; the viewer can be a
 - **Crypto changes** must keep Kotlin and JavaScript identical: regenerate `test-vectors/` with
   `node tools/gen-test-vectors.mjs` only when the protocol version changes, and make both test suites pass.
 - Match the surrounding code style (`.editorconfig`); comments explain *why*, in English.
-- UI conventions: a top app bar (back, title, at most one action), settings grouped in cards under small section labels,
-  one main action at the bottom of a screen. App‑wide settings (theme, language) live on the Settings screen, never on
-  task screens. The web viewer uses the same palette (`web/css/app.css` variables match `res/values*/colors.xml`).
+- UI conventions: a top app bar (back, title, at most one action); dashboard tiles for the main choices; settings
+  as grouped cards under small bold section labels. **One row style everywhere**: 24dp icon, title 16sp, value 14sp,
+  text starting at the same place (`@dimen/text_start`), chevron on tappable rows. Spacing and sizes live in
+  `res/values/dimens.xml` and the `T.*` text styles; the web viewer uses the same palette and metrics
+  (`web/css/app.css` variables match `res/values*/colors.xml`). App‑wide settings (theme, language) live on the
+  Settings screen, never on task screens.
+- Icons are [Lucide](https://lucide.dev): add the name to `tools/icons.py` and regenerate (instructions at the top
+  of the file) so the app and the web viewer stay identical.
 
 ## Translations
 

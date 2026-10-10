@@ -36,7 +36,7 @@
 - [Xử lý sự cố](#xử-lý-sự-cố)
 - [Cách hoạt động](#cách-hoạt-động)
 - [Tự build](#tự-build)
-- [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
+- [Ủng hộ dự án](#ủng-hộ-dự-án) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
 
 ## Vì sao có Camerold
 
@@ -99,7 +99,7 @@ Bạn cần hai thiết bị: điện thoại cũ (làm camera) và thiết bị
    4. Bấm **Bắt đầu phát**. Nếu có dải cảnh báo vàng nói Android có thể tự tắt camera khi chạy nền, bấm **Cho phép**.
 3. Trên **máy xem**:
    1. Mở Camerold → **Xem camera** → **Quét mã QR trên máy camera**.
-   2. Trên máy camera, bấm **Mã QR xem nhanh** rồi đưa máy xem vào quét.
+   2. Trên máy camera, bấm ô **Mã QR** rồi đưa máy xem vào quét.
    3. Camera được lưu trong **Camera của bạn**. Lần sau chỉ cần bấm vào.
 
 Bạn cũng có thể nhập mã camera và mật khẩu thay vì quét.
@@ -188,7 +188,7 @@ máy và phiên bản Android.
 - **Ai có mã camera và mật khẩu (hoặc mã QR) đều xem và chỉnh được cài đặt camera.** Hãy dùng mật khẩu do app tạo, và
   chỉ chia sẻ mã QR cho người tin cậy. Mã QR chứa mật khẩu nên tự đóng sau 90 giây.
 
-Chi tiết: [docs/PROTOCOL.md](docs/PROTOCOL.md). Báo lỗ hổng bảo mật: xem [SECURITY.md](SECURITY.md).
+Chi tiết: [docs/PROTOCOL.md](docs/PROTOCOL.md) · [Chính sách quyền riêng tư](https://vanloctech.github.io/camerold/privacy.html#vi). Báo lỗ hổng bảo mật: xem [SECURITY.md](SECURITY.md).
 
 ## Xử lý sự cố
 
@@ -223,10 +223,11 @@ Thêm: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/PROTOCOL.md](docs/P
 Cần có: JDK 17, Android SDK (platform 35), Node.js 20+ (chỉ để chạy test web).
 
 ```bash
-./gradlew assembleDebug                      # app/build/outputs/apk/debug/app-debug.apk
-./gradlew assembleRelease                    # ký bằng khoá debug nếu chưa cấu hình khoá phát hành
-./gradlew testDebugUnitTest                  # test Kotlin
-NETWORK_TESTS=1 ./gradlew testDebugUnitTest  # thêm test gửi/nhận thật qua các máy chủ công cộng
+./gradlew assembleGithubDebug                    # app/build/outputs/apk/github/debug/app-github-debug.apk
+./gradlew assembleGithubRelease                  # bản GitHub (APK); ký bằng khoá debug nếu chưa cấu hình khoá phát hành
+./gradlew bundlePlayRelease                      # bản Google Play (gói AAB, không có link ủng hộ)
+./gradlew testGithubDebugUnitTest                # test Kotlin
+NETWORK_TESTS=1 ./gradlew testGithubDebugUnitTest # thêm test gửi/nhận thật qua các máy chủ công cộng
 node --test tests/*.test.mjs                 # test trang xem
 python3 -m http.server -d web 8080           # trang xem tại http://localhost:8080
 ```
@@ -253,7 +254,21 @@ base64 -i camerold-release.jks | pbcopy   # macOS; trên Linux: base64 -w0 camer
 Giữ kỹ file keystore và mật khẩu (và không đưa vào repo): mất chúng thì không phát hành được bản cập nhật cài đè lên
 bản cũ.
 
+**Google Play.** Mỗi lần phát hành cũng build gói cho Play và có thể tự đẩy lên Play; các bước cài đặt ở
+[docs/PUBLISHING.md](docs/PUBLISHING.md). Mã ứng dụng: `com.vanloctech.camerold`.
+
 Cấu trúc thư mục: xem phần *Project structure* trong [README.md](README.md#project-structure).
+
+## Ủng hộ dự án
+
+Camerold miễn phí, mã nguồn mở, không quảng cáo và không theo dõi. Nếu thấy hữu ích, bạn có thể ủng hộ để dự án tiếp tục:
+
+<p>
+  <a href="https://github.com/sponsors/vanloctech"><img alt="GitHub Sponsors" src="https://img.shields.io/badge/GitHub%20Sponsors-%E2%9D%A4-db61a2?style=for-the-badge&logo=githubsponsors&logoColor=white"></a>
+  <a href="https://buymeacoffee.com/vanloctech"><img alt="Mời một ly cà phê" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
+</p>
+
+Gắn sao cho repo, báo lại app chạy thế nào trên máy của bạn và chia sẻ cho người khác cũng là ủng hộ rất lớn.
 
 ## Đóng góp
 
@@ -268,4 +283,5 @@ cũng phải theo giấy phép GPL và công bố mã nguồn.
 
 Các thành phần bên thứ ba giữ giấy phép riêng, đều tương thích GPL: WebRTC (BSD, qua `io.github.webrtc-sdk`),
 OkHttp (Apache‑2.0), ZXing (Apache‑2.0), jsQR (Apache‑2.0, `web/vendor/jsQR.js`),
-qrcode-generator (MIT, `web/vendor/qrcode.js`).
+qrcode-generator (MIT, `web/vendor/qrcode.js`),
+biểu tượng Lucide (ISC, tạo bằng `tools/icons.py`).

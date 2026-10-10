@@ -13,7 +13,7 @@ to all of them at once, so any single broker can be down:
 | Eclipse Mosquitto | `wss://test.mosquitto.org:8081/mqtt` |
 | shiftr.io | `wss://public.cloud.shiftr.io` (shared login `public` / `public`, written as `wss://public:public@…`) |
 
-`./gradlew testDebugUnitTest` with `NETWORK_TESTS=1` checks a real round trip through each of them.
+`./gradlew testGithubDebugUnitTest` with `NETWORK_TESTS=1` checks a real round trip through each of them.
 
 **Own broker.** Instead of (or in front of) the public list, the camera can use the user's own broker
 (`signaling/Brokers.kt`, `web/js/config.js`): presets for HiveMQ Cloud (`wss://HOST:8884/mqtt`), EMQX Cloud

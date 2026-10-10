@@ -41,6 +41,7 @@ function initSettings() {
 
   // In the app, theme and language follow the app's Settings screen
   $('lookGroup').hidden = IN_APP;
+  $('supportBox').hidden = IN_APP;
   if (IN_APP) return;
   setSeg('selTheme', savedTheme());
   onSeg('selTheme', v => {

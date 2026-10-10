@@ -16,7 +16,7 @@ import vn.camerold.R
 class CornerMask(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.bg) }
     private val path = Path()
-    private val r = 20 * resources.displayMetrics.density
+    private val r = resources.getDimension(R.dimen.card_radius)
 
     override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
         path.reset()

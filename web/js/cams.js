@@ -52,19 +52,21 @@ function renderCams() {
   $('manualBox').hidden = !showForm; $('goBar').hidden = !showForm; $('manualToggle').hidden = showForm;
   const box = $('camList'); box.replaceChildren();
   for (const cam of cams) {
-    const row = document.createElement('div'); row.className = 'cam-item';
-    const open = document.createElement('button'); open.type = 'button'; open.className = 'cam-open';
-    open.innerHTML = '<span class="cam-ic"><svg class="i"><use href="#i-camera"/></svg></span><span class="grow"><span class="t"></span><span class="s"></span></span>';
-    open.querySelector('.t').textContent = cam.name || t('cam_default');
+    // A tile per camera; the ⋮ button sits in its corner (a separate button, so it isn't nested in the tile's)
+    const tile = document.createElement('div');
+    tile.className = 'cam-tile'; tile.setAttribute('role', 'button'); tile.tabIndex = 0;
+    tile.innerHTML = '<span class="cam-ic"><svg class="i"><use href="#i-camera"/></svg></span><span class="t"></span><span class="s"></span>';
+    tile.querySelector('.t').textContent = cam.name || t('cam_default');
     const when = cam.last ? relTime(cam.last) : '';
-    open.querySelector('.s').textContent = [cam.room, when === null ? t('cam_just') : when && t('cam_last', { when })].filter(Boolean).join(' · ');
-    open.onclick = () => start(cam);
+    tile.querySelector('.s').textContent = [cam.room, when === null ? t('cam_just') : when && t('cam_last', { when })].filter(Boolean).join(' · ');
+    tile.onclick = () => start(cam);
+    tile.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(cam); } };
     const more = document.createElement('button'); more.type = 'button'; more.className = 'icon-btn cam-more';
     more.setAttribute('aria-label', t('a_more')); more.title = t('a_more');
     more.innerHTML = '<svg class="i"><use href="#i-more"/></svg>';
-    more.onclick = () => openCamMenu(cam);
-    row.append(open, more);
-    box.appendChild(row);
+    more.onclick = e => { e.stopPropagation(); openCamMenu(cam); };
+    tile.appendChild(more);
+    box.appendChild(tile);
   }
 }
 function openCamMenu(cam) {

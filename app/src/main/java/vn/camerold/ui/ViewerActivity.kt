@@ -23,6 +23,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewAssetLoader
+import vn.camerold.R
 
 /** Viewer mode: runs the bundled web/index.html page itself in a WebView. */
 class ViewerActivity : BaseActivity() {
@@ -67,7 +68,7 @@ class ViewerActivity : BaseActivity() {
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
         web = WebView(this)
-        web.setBackgroundColor(0xFF000000.toInt())
+        web.setBackgroundColor(getColor(R.color.bg)) // no black flash before the page draws
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.mediaPlaybackRequiresUserGesture = false
@@ -106,6 +107,7 @@ class ViewerActivity : BaseActivity() {
         web.addJavascriptInterface(Bridge(), "CameroldApp")
         if (!isTablet) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(web)
+        applyBars(false)
         web.loadUrl(pageUrl(intent))
     }
 
@@ -188,15 +190,50 @@ class ViewerActivity : BaseActivity() {
             "error"
         }
 
+        /** Status/navigation bar colors follow the page: the page background on lists and settings, black under video. */
+        @JavascriptInterface
+        fun setDarkBars(dark: Boolean) = runOnUiThread { applyBars(dark) }
+
         /** The page is showing a camera (not the sign-in form). */
         @JavascriptInterface
         fun setWatching(on: Boolean) = runOnUiThread { watching = on }
     }
 
+    // Like YouTube: in fullscreen, Back only exits fullscreen.
+    // Android 13+: a back callback registered only while in fullscreen (works with predictive back);
+    // older versions: onBackPressed.
+    private val exitFullscreenOnBack: Any? =
+        if (Build.VERSION.SDK_INT >= 33) android.window.OnBackInvokedCallback { setFullscreen(false) } else null
+
+    private fun updateBackHandling() {
+        if (Build.VERSION.SDK_INT < 33) return
+        val cb = exitFullscreenOnBack as android.window.OnBackInvokedCallback
+        onBackInvokedDispatcher.unregisterOnBackInvokedCallback(cb)
+        if (fullscreen) onBackInvokedDispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, cb)
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // Like YouTube: in fullscreen, Back only exits fullscreen
         if (fullscreen) setFullscreen(false) else @Suppress("DEPRECATION") super.onBackPressed()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun applyBars(dark: Boolean) {
+        val color = if (dark) 0xFF000000.toInt() else getColor(R.color.bg)
+        window.statusBarColor = color
+        window.navigationBarColor = color
+        window.decorView.setBackgroundColor(color) // what shows behind the bars on Android 15+ (edge to edge)
+        val lightIcons = dark || ThemePref.isDark(this)
+        if (Build.VERSION.SDK_INT >= 30) {
+            val flags = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            window.insetsController?.setSystemBarsAppearance(if (lightIcons) 0 else flags, flags)
+        } else {
+            var v = window.decorView.systemUiVisibility
+            v = if (lightIcons) v and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() else v or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            if (Build.VERSION.SDK_INT >= 26)
+                v = if (lightIcons) v and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv() else v or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            window.decorView.systemUiVisibility = v
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -208,6 +245,7 @@ class ViewerActivity : BaseActivity() {
             autoEnterArmed = false
         }
         fullscreen = on
+        updateBackHandling()
         requestedOrientation = when {
             on -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             isTablet -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED

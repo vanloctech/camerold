@@ -190,7 +190,7 @@ class CameraSettingsActivity : BaseActivity() {
 
         // Heat protection: can change any time, also while streaming (applied live)
         val heat = rows.section(content, R.string.section_heat)
-        val (rHeat, _) = rows.switchRow(heat, R.drawable.ic_warn, R.string.heat_guard, cfg.heatGuard) {
+        val (rHeat, _) = rows.switchRow(heat, R.drawable.ic_thermo, R.string.heat_guard, cfg.heatGuard) {
             updateHeat(cfg.copy(heatGuard = it))
         }
         rHeat.value(getString(R.string.heat_guard_sub))

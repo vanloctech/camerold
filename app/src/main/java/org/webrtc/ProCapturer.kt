@@ -280,6 +280,10 @@ class ProCapturer(context: Context, private val events: Events) : VideoCapturer 
             ch = l.physicalId?.let { cm.getCameraCharacteristics(it) } ?: logicalCh
             front = ch!!.get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_FRONT
             sensorOrientation = ch!!.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 90
+            // The user can revoke the permission in Settings while the camera service keeps running
+            if (appCtx.checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                events.onCameraError(appCtx.getString(R.string.need_camera)); return
+            }
             cm.openCamera(l.cameraId, object : CameraDevice.StateCallback() {
                 override fun onOpened(d: CameraDevice) {
                     if (gen != openGen || !running) { d.close(); return }

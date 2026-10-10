@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.3.0
+- **New look**, inspired by SmartThings: dashboard tiles for the main choices and for saved cameras, grouped settings
+  cards, an indigo‑blue primary color, and one row style everywhere (same type sizes, same text edge, chevrons on
+  tappable rows), so text lines up across every screen, in the app and the web viewer. Light and dark themes.
+- Icons from Lucide on Android and the web (`tools/icons.py` generates both).
+- Camera screen: quick tiles for the QR code and sound; camera settings summary in its own card; the password field
+  no longer switches to a monospace font.
+- In the app's viewer, the status bar matches the page (black only under the video).
+- **New package name `com.vanloctech.camerold`** (was `vn.camerold`), ready for Google Play. Android treats it as a new
+  app: uninstall the old one; saved settings and cameras don't carry over.
+- Targets Android 16 (API 36), as Google Play requires: content stays clear of the status and navigation bars on
+  Android 15+ (edge‑to‑edge), and Back works with predictive back gestures (it still leaves full screen first).
+- Privacy policy page (Settings → About → Privacy policy), published with the web viewer.
+- Releases also build the Google Play bundle and can upload it to Play automatically (see docs/PUBLISHING.md).
+- The camera re‑checks its permission before opening, in case it was revoked while streaming.
+- Support the project: GitHub Sponsors and Buy Me a Coffee links in Settings (GitHub build), the web viewer's
+  settings and the README. The Google Play build leaves them out, as Play's payments policy requires.
+
 ## 3.2.0
 - Viewer remembers the picture rotation (↻) for each saved camera.
 - Removed the link to a specific TURN provider and its example addresses; the 4G help is now provider‑neutral.

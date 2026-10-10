@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33FFFFFF">
-    <item>
-        <selector>
-            <item android:state_enabled="false"><shape><solid android:color="#80F2443A" /><corners android:radius="28dp" /></shape></item>
-            <item><shape><solid android:color="@color/bad" /><corners android:radius="28dp" /></shape></item>
-        </selector>
-    </item>
+    <item><shape><solid android:color="@color/bad" /><corners android:radius="28dp" /></shape></item>
 </ripple>

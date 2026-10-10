@@ -16,7 +16,8 @@ import vn.camerold.R
 /** Builds the grouped settings lists used by every screen: section label, card, rows, notes. */
 class Rows(private val a: Activity) {
 
-    class Row(val view: View, val title: TextView, val summary: TextView, val actions: LinearLayout, val divider: View? = null) {
+    class Row(val view: View, val title: TextView, val summary: TextView, val actions: LinearLayout, val divider: View? = null,
+              val chevron: View? = null) {
         /** Shows/hides the row together with the line above it. */
         var visible: Boolean
             get() = view.visibility == View.VISIBLE
@@ -36,7 +37,7 @@ class Rows(private val a: Activity) {
     fun section(parent: LinearLayout, @StringRes title: Int): LinearLayout {
         parent.addView(TextView(a, null, 0, R.style.SectionTitle).apply { setText(title) },
             LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                topMargin = dp(24); bottomMargin = dp(8)
+                topMargin = a.resources.getDimensionPixelSize(R.dimen.section_gap); bottomMargin = dp(10)
             })
         return card(parent)
     }
@@ -52,16 +53,18 @@ class Rows(private val a: Activity) {
     fun note(parent: LinearLayout, text: CharSequence): TextView =
         TextView(a, null, 0, R.style.Note).apply { this.text = text }.also {
             parent.addView(it, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                .apply { topMargin = dp(8) })
+                .apply { topMargin = dp(10) })
         }
 
     fun row(card: LinearLayout, icon: Int, @StringRes title: Int, onClick: (() -> Unit)? = null): Row {
         val line = if (card.childCount > 0) divider().also { card.addView(it) } else null
         val v = a.layoutInflater.inflate(R.layout.row_item, card, false)
         v.findViewById<ImageView>(R.id.icon).setImageResource(icon)
-        val r = Row(v, v.findViewById(R.id.title), v.findViewById(R.id.summary), v.findViewById(R.id.actions), line)
+        val chevron = v.findViewById<View>(R.id.chevron)
+        val r = Row(v, v.findViewById(R.id.title), v.findViewById(R.id.summary), v.findViewById(R.id.actions), line, chevron)
         r.title.setText(title)
-        if (onClick != null) v.setOnClickListener { onClick() } else v.background = null
+        // Tappable rows end with a chevron (switch rows and rows with their own buttons hide it again)
+        if (onClick != null) { v.setOnClickListener { onClick() }; chevron.visibility = View.VISIBLE } else v.background = null
         card.addView(v)
         return r
     }
@@ -73,7 +76,9 @@ class Rows(private val a: Activity) {
             isChecked = checked
             setOnCheckedChangeListener { _, on -> onChange(on) }
         }
-        r.actions.addView(sw)
+        r.actions.addView(sw, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            .apply { marginEnd = dp(10) })
+        r.chevron?.visibility = View.GONE
         return r to sw
     }
 
@@ -85,7 +90,7 @@ class Rows(private val a: Activity) {
         v.findViewById<TextView>(R.id.title).setText(title)
         val e = v.findViewById<EditText>(R.id.edit)
         e.hint = hint
-        e.inputType = type
+        setInputType(e, type)
         e.tag = v
         card.addView(v)
         return e
@@ -93,6 +98,7 @@ class Rows(private val a: Activity) {
 
     fun iconAction(parent: LinearLayout, icon: Int, @StringRes desc: Int, onClick: () -> Unit): ImageView =
         ImageView(a).apply {
+            ((parent.parent as? View)?.findViewById<View>(R.id.chevron))?.visibility = View.GONE
             setImageResource(icon)
             imageTintList = ColorStateList.valueOf(a.getColor(R.color.text2))
             contentDescription = a.getString(desc)
@@ -104,7 +110,9 @@ class Rows(private val a: Activity) {
 
     private fun divider() = View(a).apply {
         setBackgroundColor(a.getColor(R.color.line))
-        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1).apply { marginStart = dp(64) }
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1).apply {
+            marginStart = a.resources.getDimensionPixelSize(R.dimen.text_start)
+        }
     }
 
     fun choose(@StringRes title: Int, items: List<String>, selected: Int, pick: (Int) -> Unit) {
@@ -116,6 +124,12 @@ class Rows(private val a: Activity) {
     }
 
     companion object {
+        /** Android switches password fields to a monospace font; keep the same font as every other text. */
+        fun setInputType(e: EditText, type: Int) {
+            e.inputType = type
+            e.typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.NORMAL)
+        }
+
         fun setChildrenEnabled(v: View, on: Boolean) {
             v.isEnabled = on
             if (v is ViewGroup) for (i in 0 until v.childCount) setChildrenEnabled(v.getChildAt(i), on)

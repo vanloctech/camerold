@@ -13,9 +13,9 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - uses: gradle/actions/setup-gradle@v4
       - name: Build and unit test
-        run: ./gradlew assembleDebug testDebugUnitTest
+        run: ./gradlew assembleGithubDebug assemblePlayDebug testGithubDebugUnitTest
       - uses: actions/upload-artifact@v4
-        with: { name: camerold-debug-apk, path: app/build/outputs/apk/debug/app-debug.apk }
+        with: { name: camerold-debug-apk, path: app/build/outputs/apk/github/debug/app-github-debug.apk }
 
   web:
     runs-on: ubuntu-latest

@@ -4,9 +4,9 @@
     <string name="app_name" translatable="false">Camerold</string>
     <string name="home_running">Camera is live · tap to open</string>
     <string name="home_camera_title">Use as camera</string>
-    <string name="home_camera_sub">Place this phone where you want to watch</string>
+    <string name="home_camera_sub">Place it where you want to watch</string>
     <string name="home_viewer_title">Watch a camera</string>
-    <string name="home_viewer_sub">Live video and sound from anywhere</string>
+    <string name="home_viewer_sub">Live, from anywhere</string>
     <string name="home_footer">Free · Private and encrypted · Nothing is recorded</string>
     <string name="back">Back</string>
     <string name="settings_title">Settings</string>
@@ -15,15 +15,21 @@
     <string name="lang_title">Language</string>
     <string name="lang_system">Phone language</string>
     <string name="about_version">Version</string>
+    <string name="section_support">Support the project</string>
+    <string name="support_sponsors">GitHub Sponsors</string>
+    <string name="support_sponsors_sub">Monthly or one-time</string>
+    <string name="support_coffee">Buy me a coffee</string>
+    <string name="support_coffee_sub">A small one-time thank-you</string>
+    <string name="support_note">Camerold is free and open source, with no ads and no tracking. If it helps you, a small contribution keeps it going. Thank you!</string>
+    <string name="url_sponsors" translatable="false">https://github.com/sponsors/vanloctech</string>
+    <string name="url_coffee" translatable="false">https://buymeacoffee.com/vanloctech</string>
+    <string name="about_privacy">Privacy policy</string>
+    <string name="privacy_url" translatable="false">https://vanloctech.github.io/camerold/privacy.html</string>
     <string name="about_licenses">Open-source licenses</string>
     <string name="about_licenses_sub">GNU GPL v3.0</string>
     <string name="licenses_text">Camerold is free software under the GNU General Public License v3.0.\n\nIt uses: WebRTC (BSD), OkHttp (Apache 2.0), ZXing (Apache 2.0), jsQR (Apache 2.0), qrcode-generator (MIT).</string>
-    <string name="home_question">How will you use this phone?</string>
-    <string name="home_question_sub">You can switch any time.</string>
     <string name="camera_settings_title">Camera settings</string>
-    <string name="change">Change</string>
     <string name="section_connect">How viewers connect</string>
-    <string name="connect_note">Viewers need the camera code and password, or simply scan the QR code.</string>
     <string name="settings_locked">Stop streaming to change these settings</string>
     <string name="section_picture">Picture</string>
     <string name="section_sound">Sound</string>
@@ -34,6 +40,21 @@
     <string name="sum_sound_off">no sound</string>
     <string name="banner_bg">Android may stop the camera in the background</string>
     <string name="banner_bg_fix">Allow</string>
+    <string name="home_question_sub2">Choose what this phone does. You can switch any time.</string>
+    <string name="home_how">How it works</string>
+    <string name="how_1">Turn an old phone into a camera</string>
+    <string name="how_1_sub">Place it where you want to watch and start streaming</string>
+    <string name="how_2">Scan its QR code from your phone</string>
+    <string name="how_2_sub">Watch from the app or any browser, at home or over 4G</string>
+    <string name="how_3">Private by design</string>
+    <string name="how_3_sub">Video goes directly between your devices, encrypted. Nothing is recorded.</string>
+    <string name="section_camera">Camera</string>
+    <string name="tile_qr">QR code</string>
+    <string name="tile_qr_sub">For viewers to scan</string>
+    <string name="tile_sound">Sound</string>
+    <string name="tile_on">On</string>
+    <string name="tile_off">Off</string>
+    <string name="row_camera_settings">Camera settings</string>
     <string name="theme_title">Appearance</string>
     <string name="theme_system">System default</string>
     <string name="theme_light">Light</string>
@@ -53,12 +74,10 @@
     <string name="row_code">Camera code</string>
     <string name="share_code">Share camera code</string>
     <string name="row_password">Password</string>
-    <string name="password_hint">Tap 🎲 for a strong password</string>
+    <string name="password_hint">Tap the dice for a strong one</string>
     <string name="toggle_password">Show or hide password</string>
     <string name="gen_password">Generate a strong password</string>
     <string name="password_generated">Strong password created. Viewers just scan the QR code.</string>
-    <string name="row_qr">Quick-connect QR code</string>
-    <string name="row_qr_sub">Viewers scan it to start watching</string>
     <string name="row_quality">Picture quality</string>
     <string name="q_hd">HD 720p · saves data</string>
     <string name="q_fhd">Full HD 1080p · recommended</string>

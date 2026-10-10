@@ -8,7 +8,6 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -53,7 +52,9 @@ class CameraActivity : BaseActivity() {
     private lateinit var previewTitle: TextView
     private lateinit var previewSub: TextView
     private val pulses = mutableListOf<android.animation.Animator>()
-    private lateinit var settingsSummary: TextView
+    private lateinit var rowSettings: Rows.Row
+    private lateinit var qrTile: Tile
+    private lateinit var soundTile: Tile
     private lateinit var banner: View
     private lateinit var btnStart: View
     private lateinit var btnIcon: ImageView
@@ -86,7 +87,8 @@ class CameraActivity : BaseActivity() {
         previewHint = findViewById(R.id.previewHint)
         previewTitle = findViewById(R.id.previewTitle)
         previewSub = findViewById(R.id.previewSub)
-        settingsSummary = findViewById(R.id.settingsSummary)
+        qrTile = Tile(findViewById(R.id.tileQr))
+        soundTile = Tile(findViewById(R.id.tileSound))
         banner = findViewById(R.id.banner)
         btnStart = findViewById(R.id.btnStart)
         btnIcon = findViewById(R.id.btnIcon)
@@ -96,7 +98,14 @@ class CameraActivity : BaseActivity() {
 
         draft = Prefs.load(this)
         buildConnection()
-        findViewById<View>(R.id.settingsLine).setOnClickListener { openSettings() }
+        qrTile.onClick { showQr() }
+        // Sound on/off right here (it can't change while streaming: the microphone is set up when streaming starts)
+        soundTile.onClick {
+            if (CameraService.running) return@onClick
+            Prefs.save(this, Prefs.load(this).copy(audio = !Prefs.load(this).audio))
+            refreshUi()
+        }
+        rowSettings = rows.row(findViewById(R.id.groupCam), R.drawable.ic_sliders, R.string.row_camera_settings) { openSettings() }
 
         // 4:3 preview frame
         findViewById<View>(R.id.previewBox).let { box ->
@@ -127,7 +136,6 @@ class CameraActivity : BaseActivity() {
         // The name can change any time, even while streaming (viewers see it at once)
         rowName = rows.row(conn, R.drawable.ic_camera, R.string.row_cam_name) { editName() }
         rowRoom = rows.row(conn, R.drawable.ic_hash, R.string.row_code) { editRoom() }
-        rowRoom.summary.typeface = Typeface.MONOSPACE
         rows.iconAction(rowRoom.actions, R.drawable.ic_share, R.string.share_code) { shareRoom() }
         lockable += rowRoom.view
 
@@ -143,15 +151,13 @@ class CameraActivity : BaseActivity() {
             toast(R.string.password_generated)
         }
         lockable += password.tag as View
-
-        rows.row(conn, R.drawable.ic_qr, R.string.row_qr) { showQr() }.value(getString(R.string.row_qr_sub))
     }
 
     private fun showPassword(eye: ImageView, show: Boolean) {
         passwordVisible = show
         val sel = password.selectionEnd
-        password.inputType = InputType.TYPE_CLASS_TEXT or
-            if (show) InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD else InputType.TYPE_TEXT_VARIATION_PASSWORD
+        Rows.setInputType(password, InputType.TYPE_CLASS_TEXT or
+            if (show) InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD else InputType.TYPE_TEXT_VARIATION_PASSWORD)
         password.setSelection(sel.coerceIn(0, password.text.length))
         eye.setImageResource(if (show) R.drawable.ic_eye_off else R.drawable.ic_eye)
     }
@@ -221,8 +227,7 @@ class CameraActivity : BaseActivity() {
     private fun editRoom() {
         val input = EditText(this).apply {
             setText(draft.room)
-            typeface = Typeface.MONOSPACE
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            Rows.setInputType(this, InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
             setSelection(text.length)
         }
         val box = FrameLayout(this).apply { setPadding(dp(24), dp(8), dp(24), 0); addView(input) }
@@ -295,6 +300,14 @@ class CameraActivity : BaseActivity() {
         btnStart.background = getDrawable(if (running) R.drawable.bg_pill_danger else R.drawable.bg_pill)
         btnIcon.setImageResource(if (running) R.drawable.ic_stop else R.drawable.ic_play)
         btnText.setText(if (running) R.string.btn_stop else R.string.btn_start)
+        // White on red while streaming; the primary button's own text color otherwise
+        val fg = if (running) 0xFFFFFFFF.toInt() else getColor(R.color.on_accent)
+        btnText.setTextColor(fg); btnIcon.imageTintList = ColorStateList.valueOf(fg)
+        val audio = Prefs.load(this).audio
+        qrTile.set(R.drawable.ic_qr, getString(R.string.tile_qr), getString(R.string.tile_qr_sub))
+        soundTile.set(if (audio) R.drawable.ic_mic else R.drawable.ic_mic_off, getString(R.string.tile_sound),
+            getString(if (audio) R.string.tile_on else R.string.tile_off), on = audio)
+        soundTile.enabled = !running
         btnDim.visibility = if (running) View.VISIBLE else View.GONE
         lockable.forEach { Rows.setChildrenEnabled(it, !running); it.alpha = if (running) 0.45f else 1f }
         if (running) draft = Prefs.load(this)
@@ -315,7 +328,7 @@ class CameraActivity : BaseActivity() {
     private fun updateSummary() {
         val c = Prefs.load(this)
         val lens = try { ProCapturer.listLenses(this).firstOrNull { it.key == c.lens }?.label } catch (_: Exception) { null }
-        settingsSummary.text = CameraSettingsActivity.summary(this, c, lens)
+        rowSettings.value(CameraSettingsActivity.summary(this, c, lens))
     }
 
     /** One problem at a time, with its fix right there. */

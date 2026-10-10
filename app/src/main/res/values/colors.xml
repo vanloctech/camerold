@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Neutral surfaces, one blue accent. Dark values live in values-night/colors.xml -->
-    <color name="bg">#F4F5F7</color>
+    <!-- Neutral surfaces + one indigo-blue primary (same family as the logo). Dark values: values-night/colors.xml -->
+    <color name="bg">#F2F3F5</color>
     <color name="card">#FFFFFF</color>
-    <color name="text">#15171C</color>
-    <color name="text2">#5F6672</color>
-    <color name="line">#14000000</color>
-    <color name="accent">#2E6BF0</color>
-    <color name="accent_soft">#1A2E6BF0</color>
+    <color name="text">#111318</color>
+    <color name="text2">#6A707B</color>
+    <color name="text3">#9AA0AA</color>
+    <color name="line">#14111318</color>
+    <color name="accent">#3D5AFE</color>
     <color name="on_accent">#FFFFFF</color>
-    <color name="ok">#1E9E5A</color>
-    <color name="warn">#D98200</color>
-    <color name="warn_soft">#1FF5A524</color>
-    <color name="bad">#E0483D</color>
-    <color name="ripple">#1A000000</color>
+    <color name="icon_bg">#F0F1F4</color>
+    <color name="ok">#12A150</color>
+    <color name="warn">#D97706</color>
+    <color name="warn_soft">#1FF59E0B</color>
+    <color name="bad">#E5484D</color>
+    <color name="ripple">#14000000</color>
     <color name="chip">#99000000</color>
 </resources>

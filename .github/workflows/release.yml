@@ -11,6 +11,11 @@
 # Signing: add these repository secrets so every release has the same signature (users can then update in place):
 #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
 # Without them the APK is signed with the runner's throwaway debug key, and the release says so.
+#
+# Google Play (optional, see docs/PUBLISHING.md): the Play bundle (.aab) is always built and kept as a workflow artifact.
+# With the secret PLAY_SERVICE_ACCOUNT_JSON it is also uploaded to Play:
+#   - track: repository variable PLAY_TRACK (default "internal"); pre-release tags always go to "internal"
+#   - status: repository variable PLAY_STATUS (default "draft"; set "completed" once the app is published)
 name: Release
 on:
   push:
@@ -28,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
     steps:
       - uses: actions/checkout@v4
 
@@ -63,9 +69,11 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          ./gradlew testDebugUnitTest assembleRelease
+          # GitHub build (APK, with donation links) and Play build (bundle, without them: Play policy)
+          ./gradlew testGithubDebugUnitTest assembleGithubRelease bundlePlayRelease
           mkdir -p dist
-          cp app/build/outputs/apk/release/app-release.apk dist/Camerold.apk
+          cp app/build/outputs/apk/github/release/app-github-release.apk dist/Camerold.apk
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab "dist/Camerold-${RELEASE_VERSION}.aab"
           (cd dist && sha256sum Camerold.apk > Camerold.apk.sha256)
 
       - name: Release notes from CHANGELOG.md
@@ -89,6 +97,12 @@ jobs:
           } >> notes.md
           cat notes.md
 
+      # The Play bundle, for manual uploads in Play Console (the very first upload must be done there)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: camerold-${{ steps.v.outputs.version }}-play-bundle
+          path: dist/*.aab
+
       - uses: softprops/action-gh-release@v2
         with:
           name: Camerold ${{ steps.v.outputs.version }}
@@ -98,3 +112,24 @@ jobs:
           files: |
             dist/Camerold.apk
             dist/Camerold.apk.sha256
+
+      - name: Google Play release notes (what's new)
+        if: ${{ env.PLAY_JSON != '' }}
+        run: |
+          mkdir -p whatsnew
+          # The CHANGELOG section as plain text, within Play's 500-character limit
+          sed -n '1,/^### Download/p' notes.md | grep -v '^### Download' | sed -e 's/\*\*//g' -e 's/`//g' -e 's/^- /• /' \
+            | awk 'NF' | head -c 495 > whatsnew/whatsnew-en-US
+          cat whatsnew/whatsnew-en-US
+
+      - name: Publish to Google Play
+        if: ${{ env.PLAY_JSON != '' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.vanloctech.camerold
+          releaseFiles: dist/*.aab
+          releaseName: ${{ steps.v.outputs.version }}
+          track: ${{ steps.v.outputs.prerelease == 'true' && 'internal' || vars.PLAY_TRACK || 'internal' }}
+          status: ${{ vars.PLAY_STATUS || 'draft' }}
+          whatsNewDirectory: whatsnew

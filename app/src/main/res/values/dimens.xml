@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- One grid for every screen: text in cards starts at card_pad + icon + icon_gap -->
+    <dimen name="screen_pad">16dp</dimen>
+    <dimen name="card_radius">24dp</dimen>
+    <dimen name="card_pad">20dp</dimen>
+    <dimen name="icon">24dp</dimen>
+    <dimen name="icon_gap">16dp</dimen>
+    <dimen name="text_start">60dp</dimen>
+    <dimen name="row_min">64dp</dimen>
+    <dimen name="section_gap">28dp</dimen>
+</resources>

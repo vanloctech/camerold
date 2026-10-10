@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#0E1014</color>
-    <color name="card">#1A1D23</color>
-    <color name="text">#ECEEF2</color>
-    <color name="text2">#9AA1AD</color>
+    <color name="bg">#000000</color>
+    <color name="card">#17181B</color>
+    <color name="text">#F2F3F5</color>
+    <color name="text2">#9EA3AC</color>
+    <color name="text3">#6B707A</color>
     <color name="line">#1AFFFFFF</color>
-    <color name="accent">#5B8DFF</color>
-    <color name="accent_soft">#295B8DFF</color>
-    <color name="warn">#F0A030</color>
-    <color name="warn_soft">#26F5A524</color>
+    <color name="accent">#7B8CFF</color>
+    <color name="on_accent">#0B0F2A</color>
+    <color name="icon_bg">#24262B</color>
+    <color name="warn">#F59E0B</color>
+    <color name="warn_soft">#26F59E0B</color>
     <color name="ripple">#1FFFFFFF</color>
 </resources>

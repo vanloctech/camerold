@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Top app bar: back, title, one optional action -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/topBar" android:layout_width="match_parent" android:layout_height="64dp"
+    android:id="@+id/topBar" android:layout_width="match_parent" android:layout_height="56dp"
     android:orientation="horizontal" android:gravity="center_vertical"
     android:paddingStart="4dp" android:paddingEnd="4dp" android:background="@color/bg">
     <ImageButton android:id="@+id/barBack" style="@style/BarButton" android:src="@drawable/ic_back"
         android:contentDescription="@string/back" />
-    <TextView android:id="@+id/barTitle" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-        android:layout_marginStart="8dp" android:singleLine="true" android:ellipsize="end"
-        android:textColor="@color/text" android:textSize="22sp" android:fontFamily="sans-serif-medium" />
+    <TextView android:id="@+id/barTitle" style="@style/T.Title" android:layout_width="0dp" android:layout_weight="1"
+        android:layout_height="wrap_content" android:layout_marginStart="4dp" android:singleLine="true" android:ellipsize="end" />
     <ImageButton android:id="@+id/barAction" style="@style/BarButton" android:visibility="gone" />
 </LinearLayout>
