@@ -37,7 +37,8 @@
       <li>The developer does <b>not</b> collect, store, sell or share any of your data. There is no account, no
         advertising and no analytics.</li>
       <li>Video and sound go <b>directly</b> from the camera phone to the devices watching it, end‑to‑end encrypted.</li>
-      <li>Nothing is recorded by the app.</li>
+      <li>The app records nothing unless you start a timelapse. Its photos and videos stay on the camera phone until
+        you download or delete them.</li>
     </ul>
 
     <h2>Camera and microphone</h2>
@@ -52,7 +53,8 @@
       <li><b>Signaling servers (MQTT brokers)</b>: before a stream starts, the devices exchange small messages through
         public MQTT servers (by default EMQX, HiveMQ, Eclipse Mosquitto and shiftr.io) or a server you configure.
         These messages are encrypted with a key derived from your camera password, so the servers can't read them.
-        Like any internet service, they can see IP addresses and connection times.</li>
+        Like any internet service, they can see IP addresses and connection times. While streaming, the camera also
+        leaves its battery level there, encrypted the same way, so your other phones can warn you when it runs low.</li>
       <li><b>STUN servers</b> (Google, Cloudflare) help the devices find a direct route; they see IP addresses only.</li>
       <li><b>Relay (TURN) server</b>: only if you configure one. It forwards encrypted media it can't decrypt.</li>
     </ul>
@@ -62,7 +64,8 @@
     <h2>Data stored on your devices</h2>
     <p>Settings (camera code, password, names of saved cameras, server details, preferences) are stored only on your
       devices, in the app's private storage or the browser's local storage. Snapshots you take are saved to your
-      gallery or downloads folder. Uninstalling the app or clearing site data removes the stored settings.
+      gallery or downloads folder. Timelapse videos are kept in the camera app's private storage (and, if you choose,
+      the camera phone's gallery); viewers download them over the same encrypted connection as the video. Uninstalling the app or clearing site data removes the stored settings.
       If the app crashes, a report is kept on the device and shown to you; it is shared only if you copy it yourself.</p>
 
     <h2>Children</h2>
@@ -84,7 +87,8 @@
       <li>Nhà phát triển <b>không</b> thu thập, lưu trữ, bán hay chia sẻ bất kỳ dữ liệu nào của bạn. Không có tài khoản,
         không quảng cáo, không thống kê sử dụng.</li>
       <li>Hình và tiếng đi <b>thẳng</b> từ máy camera tới các máy đang xem, được mã hoá đầu‑cuối.</li>
-      <li>Ứng dụng không ghi hình.</li>
+      <li>Ứng dụng không ghi hình, trừ khi bạn bật timelapse. Ảnh và video timelapse nằm trên máy camera cho tới khi
+        bạn tải về hoặc xoá.</li>
     </ul>
 
     <h2>Camera và micro</h2>
@@ -98,7 +102,8 @@
       <li><b>Máy chủ kết nối (MQTT)</b>: trước khi phát, hai máy trao đổi vài tin nhắn nhỏ qua các máy chủ MQTT công
         cộng (mặc định EMQX, HiveMQ, Eclipse Mosquitto, shiftr.io) hoặc máy chủ bạn tự cấu hình. Tin nhắn được mã hoá
         bằng khoá tạo từ mật khẩu camera nên máy chủ không đọc được. Như mọi dịch vụ Internet, chúng thấy được địa chỉ
-        IP và thời điểm kết nối.</li>
+        IP và thời điểm kết nối. Khi đang phát, máy camera còn để lại mức pin trên đó (mã hoá theo cùng cách) để các
+        điện thoại khác của bạn báo khi pin sắp hết.</li>
       <li><b>Máy chủ STUN</b> (Google, Cloudflare) giúp hai máy tìm đường kết nối thẳng; chỉ thấy địa chỉ IP.</li>
       <li><b>Máy chủ chuyển tiếp (TURN)</b>: chỉ khi bạn tự cấu hình; nó chuyển dữ liệu đã mã hoá mà không giải mã được.</li>
     </ul>
@@ -108,7 +113,8 @@
     <h2>Dữ liệu lưu trên thiết bị của bạn</h2>
     <p>Cài đặt (mã camera, mật khẩu, tên các camera đã lưu, thông tin máy chủ, tuỳ chọn) chỉ lưu trên thiết bị của bạn,
       trong bộ nhớ riêng của ứng dụng hoặc bộ nhớ của trình duyệt. Ảnh bạn chụp được lưu vào thư viện ảnh hoặc thư mục tải
-      về. Gỡ ứng dụng hoặc xoá dữ liệu trang web sẽ xoá các cài đặt này. Khi ứng dụng gặp lỗi, báo cáo lỗi được giữ trên
+      về. Video timelapse nằm trong bộ nhớ riêng của ứng dụng trên máy camera (và thư viện ảnh của máy đó nếu bạn chọn);
+      máy xem tải chúng về qua cùng kết nối mã hoá với video. Gỡ ứng dụng hoặc xoá dữ liệu trang web sẽ xoá các cài đặt này. Khi ứng dụng gặp lỗi, báo cáo lỗi được giữ trên
       máy và hiện cho bạn xem; chỉ được chia sẻ nếu bạn tự sao chép.</p>
 
     <h2>Trẻ em</h2>

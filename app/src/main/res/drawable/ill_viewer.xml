@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home "Watch a camera" card illustration: a live video player -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="160dp" android:height="160dp"
+    android:viewportWidth="160" android:viewportHeight="160">
+    <path android:fillColor="#0FFFFFFF" android:pathData="M80,26a52,52 0 1,0 104,0a52,52 0 1,0 -104,0" />
+    <group android:translateX="-10">
+    <path android:fillColor="#0DFFFFFF" android:pathData="M32,136a38,38 0 1,0 76,0a38,38 0 1,0 -76,0" />
+    <path android:fillColor="#2EFFFFFF" android:pathData="M64,36h72a12,12 0 0,1 12,12v40a12,12 0 0,1 -12,12h-72a12,12 0 0,1 -12,-12v-40a12,12 0 0,1 12,-12z" />
+    <path android:strokeColor="#66FFFFFF" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M64,36h72a12,12 0 0,1 12,12v40a12,12 0 0,1 -12,12h-72a12,12 0 0,1 -12,-12v-40a12,12 0 0,1 12,-12z" />
+    <path android:fillColor="#F2FFFFFF" android:pathData="M85,68a15,15 0 1,0 30,0a15,15 0 1,0 -30,0" />
+    <path android:fillColor="#FF5427D6" android:pathData="M96,61.5L107,68L96,74.5z" />
+    <path android:fillColor="#FFFF5A52" android:pathData="M60,48a4,4 0 1,0 8,0a4,4 0 1,0 -8,0" />
+    <path android:strokeColor="#40FFFFFF" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M52,114h96" />
+    <path android:strokeColor="#CCFFFFFF" android:strokeWidth="4" android:strokeLineCap="round" android:pathData="M52,114h40" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M86,114a6,6 0 1,0 12,0a6,6 0 1,0 -12,0" />
+    </group>
+</vector>

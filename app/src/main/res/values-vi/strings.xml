@@ -5,7 +5,7 @@
     <string name="home_camera_sub">Đặt máy ở nơi cần quan sát</string>
     <string name="home_viewer_title">Xem camera</string>
     <string name="home_viewer_sub">Xem trực tiếp mọi lúc</string>
-    <string name="home_footer">Miễn phí · Riêng tư, có mã hoá · Không lưu video</string>
+    <string name="home_footer">Miễn phí · Riêng tư, có mã hoá · Không lên mây</string>
     <string name="back">Quay lại</string>
     <string name="settings_title">Cài đặt</string>
     <string name="section_general">Chung</string>
@@ -35,14 +35,23 @@
     <string name="sum_sound_off">không âm thanh</string>
     <string name="banner_bg">Android có thể tự tắt camera khi chạy nền</string>
     <string name="banner_bg_fix">Cho phép</string>
-    <string name="home_question_sub2">Chọn vai trò cho điện thoại này. Đổi lại lúc nào cũng được.</string>
+    <string name="home_question">Điện thoại này sẽ làm gì?</string>
+    <string name="home_tagline">Điện thoại cũ, camera trực tiếp</string>
+    <string name="home_live">LIVE</string>
+    <string name="section_alerts">Thông báo</string>
+    <string name="alerts_title">Cảnh báo pin camera</string>
+    <string name="alerts_sub" formatted="false">Khi camera đã lưu trên máy này còn từ 20% pin trở xuống và không sạc</string>
+    <string name="alerts_blocked">Camerold đang bị tắt thông báo. Chạm để cho phép.</string>
+    <string name="alerts_note">Kiểm tra khoảng 15–30 phút một lần, kể cả khi đã tắt ứng dụng. Khi điện thoại ngủ, Android có thể kiểm tra thưa hơn; nếu thông báo đến trễ, hãy đặt mức dùng pin của Camerold là Không giới hạn.</string>
+    <string name="alerts_channel">Cảnh báo camera</string>
+    <string name="alert_bat_low">Pin còn %1$d%% và không sạc. Kiểm tra lại dây sạc nhé.</string>
     <string name="home_how">Cách hoạt động</string>
     <string name="how_1">Biến điện thoại cũ thành camera</string>
     <string name="how_1_sub">Đặt máy ở nơi cần quan sát rồi bấm bắt đầu phát</string>
     <string name="how_2">Quét mã QR bằng điện thoại của bạn</string>
     <string name="how_2_sub">Xem bằng app hoặc trình duyệt, ở nhà hay qua 4G</string>
     <string name="how_3">Riêng tư ngay từ thiết kế</string>
-    <string name="how_3_sub">Hình đi thẳng giữa các máy của bạn, có mã hoá. Không ghi hình.</string>
+    <string name="how_3_sub">Hình đi thẳng giữa các máy của bạn, có mã hoá. Không tải lên đâu cả.</string>
     <string name="section_camera">Camera</string>
     <string name="tile_qr">Mã QR</string>
     <string name="tile_qr_sub">Cho người xem quét</string>
@@ -174,6 +183,9 @@
     <string name="lens_front_zoom">Trước %sx</string>
     <string name="crash_title">Ứng dụng vừa gặp sự cố</string>
     <string name="crash_copy">Sao chép thông tin</string>
+    <plurals name="st_timelapse">
+        <item quantity="other">Đang chụp timelapse · %d ảnh</item>
+    </plurals>
     <plurals name="st_viewers">
         <item quantity="other">Đang có %d người xem</item>
     </plurals>

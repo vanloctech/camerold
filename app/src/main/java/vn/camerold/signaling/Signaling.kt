@@ -33,17 +33,20 @@ class Signaling(
 
     private val clients = brokers.map { MqttWs(it, exec, this) }
     private val seen = LinkedHashMap<String, Long>() // id -> receive time
+    /** Retained messages by topic, published again to brokers that (re)connect later. */
+    private val retained = HashMap<String, ByteArray>()
 
     fun start() = clients.forEach { it.connect() }
     fun stop() = clients.forEach { it.stop() }
 
-    /** Must be called on exec. */
-    fun send(topic: String, msg: JSONObject) {
+    /** Must be called on exec. [retain]: brokers keep it for later subscribers (see alerts/BatteryAlerts). */
+    fun send(topic: String, msg: JSONObject, retain: Boolean = false) {
         val id = SigCrypto.randomId(12)
         msg.put("id", id).put("ts", System.currentTimeMillis())
         remember(id) // don't process our own messages
         val data = SigCrypto.encrypt(key, msg.toString(), topic)
-        clients.forEach { it.publish(topic, data) }
+        if (retain) retained[topic] = data
+        clients.forEach { it.publish(topic, data, retain) }
     }
 
     private fun remember(id: String): Boolean {
@@ -60,6 +63,7 @@ class Signaling(
 
     override fun onUp(c: MqttWs) {
         c.subscribe(subscribeTopic)
+        retained.forEach { (topic, data) -> c.publish(topic, data, true) }
         report()
     }
 

@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Keeps the background battery check of saved cameras scheduled after a restart (alerts/BatteryAlerts) -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Only Android 9 and older need it to save snapshots to Pictures -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
@@ -53,5 +55,7 @@
 
         <service android:name=".camera.CameraService" android:exported="false"
             android:foregroundServiceType="camera|microphone" />
+        <service android:name=".alerts.AlertJob" android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 </manifest>

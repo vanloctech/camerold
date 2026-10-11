@@ -5,7 +5,7 @@
 <p align="center">
   <b>Biến điện thoại Android cũ thành camera an ninh xem trực tiếp.</b><br>
   Xem từ điện thoại khác hoặc trình duyệt, qua Wi‑Fi hay 4G.<br>
-  Miễn phí · không cần tài khoản · không cần máy chủ riêng · mã hoá đầu‑cuối · không lưu video.
+  Miễn phí · không cần tài khoản · không cần máy chủ riêng · mã hoá đầu‑cuối · không lên mây.
 </p>
 
 <p align="center">
@@ -58,11 +58,16 @@ dịch vụ đám mây nào.
 - Bằng **app Android hoặc trình duyệt bất kỳ**; cả hai dùng chung một trình xem.
 - **Trình phát kiểu YouTube**: cầm dọc thì thông tin nằm dưới video; xoay ngang là vào toàn màn hình, thanh điều
   khiển tự ẩn, thanh thời gian được thay bằng thanh zoom. Chụm hai ngón để zoom; vừa hoặc lấp đầy màn hình.
-- **Nhiều camera** trong một danh sách, mỗi camera có tên riêng. Bấm để xem; chia sẻ mã QR hoặc xoá từng camera.
+- **Nhiều camera** trong một danh sách, mỗi camera có tên riêng và khung hình cuối cùng đã xem. Bấm để xem; chia sẻ mã
+  QR hoặc xoá từng camera.
 - **Chụp ảnh** đúng độ phân giải đang nhận, lưu vào thư viện ảnh (app) hoặc tải về (trình duyệt).
 - **Tình trạng máy camera**: pin, đang sạc hay không, nhiệt độ, bộ nhớ trống, thời gian đã chạy, kèm cảnh báo khi
   pin yếu mà không sạc (thường do tuột dây sạc).
-- Tối đa **3 người xem** cùng lúc.
+- **Timelapse**, bật từ máy xem: chụp mỗi 2 giây tới 5 phút rồi ghép thành video tua nhanh ngay trên máy camera, có
+  ước tính dung lượng; máy xem nào cũng xem danh sách, tải về và xoá được. Rất hợp để canh máy in 3D.
+- **Cảnh báo pin**: app trên điện thoại báo khi camera đã lưu sắp hết pin mà không sạc, kể cả khi đã tắt app (không cần
+  máy chủ push).
+- Tối đa **3 người xem** cùng lúc, ai cũng thấy đang có bao nhiêu người xem.
 
 **Kết nối**
 - **Kết nối nhanh bằng mã QR**: quét bằng app, trang xem, hoặc ứng dụng camera của điện thoại. Máy tính không có
@@ -184,7 +189,7 @@ máy và phiên bản Android.
 - **Tin nhắn kết nối** được mã hoá AES‑256‑GCM, khoá tạo từ mật khẩu camera bằng PBKDF2 (600 000 vòng). Kênh trên máy
   chủ MQTT cũng tạo từ mật khẩu, nên chỉ biết mã camera thì không tìm ra được. Mỗi tin nhắn có dấu thời gian và mã
   riêng để chống phát lại.
-- **Không ghi hình, không tải lên đâu cả**, không có tài khoản, không thu thập dữ liệu sử dụng.
+- **Không tải lên đâu cả** (video timelapse nằm trên máy camera cho tới khi bạn tải về), không có tài khoản, không thu thập dữ liệu sử dụng.
 - **Ai có mã camera và mật khẩu (hoặc mã QR) đều xem và chỉnh được cài đặt camera.** Hãy dùng mật khẩu do app tạo, và
   chỉ chia sẻ mã QR cho người tin cậy. Mã QR chứa mật khẩu nên tự đóng sau 90 giây.
 

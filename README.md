@@ -5,7 +5,7 @@
 <p align="center">
   <b>Turn an old Android phone into a live security camera.</b><br>
   Watch it from another phone or any browser, over Wi‑Fi or 4G.<br>
-  Free · no account · no server to run · end‑to‑end encrypted · nothing is recorded.
+  Free · no account · no server to run · end‑to‑end encrypted · nothing goes to the cloud.
 </p>
 
 <p align="center">
@@ -58,11 +58,16 @@ your video.
 - From the **Android app or any modern browser**; both use the same viewer.
 - **YouTube‑style player**: details below the video when the phone is upright; turn it sideways for full screen with
   auto‑hiding controls and a zoom bar in place of the progress bar. Pinch to zoom; fit or fill the screen.
-- **Several cameras** in one list, each with its own name. Tap to watch; share a camera's QR code or remove it.
+- **Several cameras** in one list, each with its own name and the last picture seen from it. Tap to watch; share a
+  camera's QR code or remove it.
 - **Snapshots** at the resolution being received, saved to the gallery (app) or downloaded (browser).
 - **Camera phone health**: battery, charging, temperature, free storage and time running, with a notice when the
   battery runs low without a charger (usually a loose cable).
-- Up to **3 viewers** at the same time.
+- **Timelapse**, started from a viewer: a photo every 2 s to 5 min, turned into a fast‑forward video on the camera
+  phone, with storage estimates; list, download and delete the videos from any viewer. Great for 3D prints.
+- **Battery alerts**: the app on your phone tells you when a saved camera's battery is low and not charging, even when
+  the app is closed (no push server).
+- Up to **3 viewers** at the same time, and each sees how many are watching.
 
 **Connecting**
 - **Quick connect with a QR code**: scan it with the app, the web viewer or the phone's own camera app. On a
@@ -185,7 +190,7 @@ and Android version.
 - **Signaling messages** are encrypted with AES‑256‑GCM, with a key derived from the camera password using PBKDF2
   (600 000 iterations). The broker topic is derived from the password too, so a camera can't be found from its code
   alone. Timestamps and message IDs prevent replays.
-- **Nothing is recorded or uploaded**, and there is no account and no analytics.
+- **Nothing is uploaded anywhere** (timelapse videos stay on the camera phone until you download them), and there is no account and no analytics.
 - **Anyone with the camera code and password (or its QR code) can watch and change camera settings.** Use the
   generated password and share the QR code only with people you trust. The QR code contains the password, so it
   closes by itself after 90 seconds.

@@ -3,9 +3,11 @@
 const qualityName = h => h >= 1800 ? '4K' : h >= 1000 ? 'Full HD' : h >= 700 ? 'HD' : h ? t('q_low') : '…';
 function startStats() {
   clearInterval(S.statsTimer);
-  S.lastBytes = 0; S.lastTs = 0;
+  S.lastBytes = 0; S.lastTs = 0; S.shotTick = 0;
   S.statsTimer = setInterval(async () => {
     if (!S.pc) return;
+    // Keep the cameras list picture fresh: soon after the video starts, then every minute
+    if (++S.shotTick % 60 === 4) saveCamShot();
     const r = await S.pc.getStats();
     let inb, pair, local, remote;
     r.forEach(x => { if (x.type === 'inbound-rtp' && x.kind === 'video') inb = x; });
@@ -26,9 +28,11 @@ function startStats() {
       [t('st_route'), t(relay ? 'route_relay' : 'route_direct')],
       [t('st_latency'), rtt != null ? rtt + ' ms' : '…'],
       [t('st_audio'), t(S.audioAvail ? (S.muted ? 'audio_muted' : 'audio_on') : 'audio_none')],
+      ...(S.viewers ? [[t('st_viewers'), S.viewers > 1 ? t('viewers_others', { n: S.viewers, o: S.viewers - 1 }) : t('viewers_only_you')]] : []),
       ...healthRows(),
     ]);
-    if (!S.busyShown) setStatus(t('watching_q', { q: qualityName(h) }) + (relay ? t('via_relay') : ''), 'ok');
+    if (!S.busyShown) setStatus(t('watching_q', { q: qualityName(h) }) + (relay ? t('via_relay') : '') +
+      (S.viewers > 1 ? ' · ' + t('n_watching', { n: S.viewers }) : ''), 'ok');
   }, 1000);
 }
 /** Two-column label/value grid (built with textContent – values never contain markup). */
@@ -36,8 +40,9 @@ function renderStats(rows) {
   const box = $('stats'); box.replaceChildren();
   for (const [k, v] of rows) for (const text of [k, v]) { const s = document.createElement('span'); s.textContent = text; box.appendChild(s); }
 }
+/** Info button: an overlay on the video in landscape; in portrait the info is in the "Camera phone" tab. */
 function toggleStats() {
+  if (!$('viewer').classList.contains('immersive')) { openPanel('dev'); return; }
   $('stats').hidden = !$('stats').hidden;
-  $('qcInfo').classList.toggle('on', !$('stats').hidden);
   showCtl();
 }

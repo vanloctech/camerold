@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home "Watch a camera" card: violet, next to the blue -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient android:angle="315" android:startColor="#A47BFF" android:centerColor="#7C4DFF" android:endColor="#5427D6" />
+    <corners android:radius="28dp" />
+</shape>

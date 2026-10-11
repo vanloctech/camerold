@@ -32,6 +32,8 @@ class ViewerActivity : BaseActivity() {
     private var fullscreen = false
     private var pendingPermission: PermissionRequest? = null
     private var pendingFiles: android.webkit.ValueCallback<Array<Uri>>? = null
+    /** Timelapse video being saved (see Bridge.fileOpen). */
+    @Volatile private var download: vn.camerold.Gallery.Writer? = null
 
     // YouTube-style rotation: the watch screen stays upright; turning the phone sideways enters full screen,
     // turning it back upright leaves it. The full-screen button rotates the screen on its own.
@@ -139,6 +141,7 @@ class ViewerActivity : BaseActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == 4) return // storage (old Android): the user just taps the shutter again
+        if (requestCode == 5) return // notifications for battery alerts: nothing to do now
         val req = pendingPermission ?: return
         pendingPermission = null
         if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) req.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE))
@@ -190,6 +193,34 @@ class ViewerActivity : BaseActivity() {
             "error"
         }
 
+        /**
+         * Saving a downloaded timelapse video to Movies/Camerold, in pieces (a whole video is too big for one call):
+         * fileOpen(name) -> "ok" / "perm" (Android 9 and older: storage permission asked, try again) / "error",
+         * then fileWrite(base64) for each piece and fileClose(ok).
+         */
+        @JavascriptInterface
+        fun fileOpen(name: String): String {
+            download?.finish(false)
+            download = null
+            if (Build.VERSION.SDK_INT < 29 && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                runOnUiThread { requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 4) }
+                return "perm"
+            }
+            download = vn.camerold.Gallery.openVideo(this@ViewerActivity, name) ?: return "error"
+            return "ok"
+        }
+
+        @JavascriptInterface
+        fun fileWrite(base64: String): Boolean = try {
+            download!!.out.write(android.util.Base64.decode(base64, android.util.Base64.DEFAULT)); true
+        } catch (e: Exception) { false }
+
+        @JavascriptInterface
+        fun fileClose(ok: Boolean) {
+            download?.finish(ok)
+            download = null
+        }
+
         /** Status/navigation bar colors follow the page: the page background on lists and settings, black under video. */
         @JavascriptInterface
         fun setDarkBars(dark: Boolean) = runOnUiThread { applyBars(dark) }
@@ -197,6 +228,29 @@ class ViewerActivity : BaseActivity() {
         /** The page is showing a camera (not the sign-in form). */
         @JavascriptInterface
         fun setWatching(on: Boolean) = runOnUiThread { watching = on }
+
+        /**
+         * The saved cameras changed: [json] = [{room, pass, name, brokers}]. They're checked in the background for
+         * low battery (alerts/BatteryAlerts). The first time there's one, ask for permission to notify.
+         */
+        @JavascriptInterface
+        fun syncCams(json: String) {
+            vn.camerold.alerts.BatteryAlerts.sync(applicationContext, json)
+            runOnUiThread { askNotifyOnce(json) }
+        }
+
+        /** The page's back arrow on the sign-in screen: back to the app's home screen. */
+        @JavascriptInterface
+        fun close() = runOnUiThread { finish() }
+    }
+
+    private fun askNotifyOnce(json: String) {
+        if (Build.VERSION.SDK_INT < 33 || json.length < 5 || !vn.camerold.alerts.BatteryAlerts.isEnabled(this)) return
+        if (vn.camerold.alerts.BatteryAlerts.canNotify(this)) return
+        val p = getSharedPreferences("alerts", MODE_PRIVATE)
+        if (p.getBoolean("asked", false)) return
+        p.edit().putBoolean("asked", true).apply()
+        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 5)
     }
 
     // Like YouTube: in fullscreen, Back only exits fullscreen.
@@ -267,5 +321,5 @@ class ViewerActivity : BaseActivity() {
 
     override fun onResume() { super.onResume(); web.onResume(); if (!isTablet) orientation.enable() }
     override fun onPause() { orientation.disable(); web.onPause(); super.onPause() }
-    override fun onDestroy() { web.destroy(); super.onDestroy() }
+    override fun onDestroy() { download?.finish(false); web.destroy(); super.onDestroy() }
 }

@@ -1,12 +1,43 @@
 package vn.camerold.ui
 
+import android.Manifest
 import android.app.AlertDialog
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.view.View
 import android.widget.LinearLayout
 import vn.camerold.R
+import vn.camerold.alerts.BatteryAlerts
 
-/** App-wide settings: appearance, language, about. Camera settings live on the camera screen. */
+/** App-wide settings: appearance, language, battery alerts, about. Camera settings live on the camera screen. */
 class SettingsActivity : BaseActivity() {
+    private var alertRow: Rows.Row? = null
+
+    /** Battery alerts row: what it does, or that notifications are blocked (tap the text to fix). */
+    private fun showAlertState() {
+        val r = alertRow ?: return
+        val blocked = BatteryAlerts.isEnabled(this) && !BatteryAlerts.canNotify(this)
+        r.value(getString(if (blocked) R.string.alerts_blocked else R.string.alerts_sub))
+        r.summary.setTextColor(getColor(if (blocked) R.color.warn else R.color.text2))
+        r.summary.setOnClickListener(if (!blocked) null else View.OnClickListener {
+            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
+        })
+    }
+
+    private fun askNotify() {
+        if (Build.VERSION.SDK_INT >= 33 && !BatteryAlerts.canNotify(this))
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) =
+        showAlertState()
+
+    override fun onResume() {
+        super.onResume()
+        showAlertState()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_list)
@@ -31,6 +62,17 @@ class SettingsActivity : BaseActivity() {
                 recreate()
             }
         }.value(langName(LangPref.get(this)))
+
+        // Low-battery alerts for cameras watched from this phone (alerts/BatteryAlerts)
+        val alerts = rows.section(content, R.string.section_alerts)
+        val (alertRow, _) = rows.switchRow(alerts, R.drawable.ic_battery, R.string.alerts_title, BatteryAlerts.isEnabled(this)) { on ->
+            BatteryAlerts.setEnabled(this, on)
+            if (on) askNotify()
+            showAlertState()
+        }
+        this.alertRow = alertRow
+        rows.note(content, getString(R.string.alerts_note))
+        showAlertState()
 
         // Only in the GitHub build: Google Play doesn't allow links to personal donation pages
         if (vn.camerold.BuildConfig.DONATION_LINKS) {

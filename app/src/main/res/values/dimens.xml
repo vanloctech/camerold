@@ -9,4 +9,6 @@
     <dimen name="text_start">60dp</dimen>
     <dimen name="row_min">64dp</dimen>
     <dimen name="section_gap">28dp</dimen>
+    <!-- Group labels and notes: in line with the card edge (a hair in, for round corners) -->
+    <dimen name="title_inset">4dp</dimen>
 </resources>

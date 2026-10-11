@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home "Use as camera" card illustration: a phone with a lens, broadcasting -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="160dp" android:height="160dp"
+    android:viewportWidth="160" android:viewportHeight="160">
+    <path android:fillColor="#0FFFFFFF" android:pathData="M30,70a74,74 0 1,0 148,0a74,74 0 1,0 -148,0" />
+    <path android:strokeColor="#14FFFFFF" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M40,70a64,64 0 1,0 128,0a64,64 0 1,0 -128,0" />
+    <path android:strokeColor="#24FFFFFF" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M56,70a48,48 0 1,0 96,0a48,48 0 1,0 -96,0" />
+    <path android:strokeColor="#3DFFFFFF" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M72,70a32,32 0 1,0 64,0a32,32 0 1,0 -64,0" />
+    <path android:fillColor="#2EFFFFFF" android:pathData="M93,30h22a11,11 0 0,1 11,11v56a11,11 0 0,1 -11,11h-22a11,11 0 0,1 -11,-11v-56a11,11 0 0,1 11,-11z" />
+    <path android:strokeColor="#66FFFFFF" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M93,30h22a11,11 0 0,1 11,11v56a11,11 0 0,1 -11,11h-22a11,11 0 0,1 -11,-11v-56a11,11 0 0,1 11,-11z" />
+    <path android:fillColor="#F2FFFFFF" android:pathData="M92,64a12,12 0 1,0 24,0a12,12 0 1,0 -24,0" />
+    <path android:fillColor="#FF2337C6" android:pathData="M97,64a7,7 0 1,0 14,0a7,7 0 1,0 -14,0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M99.5,61.5a2,2 0 1,0 4,0a2,2 0 1,0 -4,0" />
+    <path android:strokeColor="#80FFFFFF" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M98,98h12" />
+</vector>

@@ -16,4 +16,12 @@
     <color name="bad">#E5484D</color>
     <color name="ripple">#14000000</color>
     <color name="chip">#99000000</color>
+    <!-- Home screen: glow behind the header, and the colors of the "how it works" steps -->
+    <color name="home_glow">#D6DFFF</color>
+    <color name="step_blue">#3D5AFE</color>
+    <color name="step_blue_soft">#1A3D5AFE</color>
+    <color name="step_violet">#7C4DFF</color>
+    <color name="step_violet_soft">#1A7C4DFF</color>
+    <color name="step_green">#12A150</color>
+    <color name="step_green_soft">#1A12A150</color>
 </resources>

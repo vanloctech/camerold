@@ -36,7 +36,8 @@ WEB = {
     "i-camoff": "camera-off", "i-eye": "eye", "i-eyeoff": "eye-off", "i-qr": "qr-code", "i-gear": "settings",
     "i-image": "image", "i-more": "ellipsis-vertical", "i-trash": "trash-2", "i-key": "key-round", "i-shot": "aperture",
     "i-flip": "switch-camera", "i-heat": "thermometer", "i-battery": "battery-low", "i-plus": "plus", "i-scan": "scan-line",
-    "i-heart": "heart", "i-coffee": "coffee",
+    "i-heart": "heart", "i-coffee": "coffee", "i-timer": "timer", "i-download": "download", "i-play": "play",
+    "i-stop": "square", "i-film": "film", "i-phone": "smartphone",
 }
 
 

@@ -32,6 +32,7 @@ import org.webrtc.VideoTrack
 import org.webrtc.audio.AudioDeviceModule
 import org.webrtc.audio.JavaAudioDeviceModule
 import vn.camerold.R
+import vn.camerold.alerts.BatteryAlerts
 import vn.camerold.data.CamConfig
 import vn.camerold.data.Prefs
 import vn.camerold.signaling.SigCrypto
@@ -54,6 +55,8 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         private const val MAX_VIEWERS = 3
         /** Nobody watching and the camera screen closed: turn the camera off after this long (less heat). */
         private const val IDLE_AFTER_S = 20L
+        /** Capture rate while a timelapse runs and nobody watches. */
+        private const val TIMELAPSE_FPS = 10
         @Volatile var current: CameraEngine? = null
 
         const val ASPECT_WIDE = "16:9"
@@ -91,6 +94,8 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
 
     private inner class Peer(val viewerId: String, val session: Int, val pc: PeerConnection, val sender: RtpSender) {
         val pending = mutableListOf<IceCandidate>()
+        /** Timelapse videos: list, download, delete. */
+        var files: TlChannel? = null
         var remoteSet = false
         var offer: String? = null
         var state = PeerConnection.PeerConnectionState.NEW
@@ -133,6 +138,12 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
     private var heat = 0
     private val thermal = ThermalGuard(ctx, exec) { level -> exec.post { applyHeat(level) } }
 
+    /** Timelapse controlled from viewers; gets every camera frame and keeps one now and then. */
+    val timelapse = Timelapse(ctx, exec) { listChanged -> exec.post { onTimelapse(listChanged) } }
+    /** Sends timelapse videos to viewers (one transfer per viewer at a time). */
+    private val filePool = java.util.concurrent.Executors.newCachedThreadPool()
+    private var tlInfoAt = 0L
+
     /** Camera turned off because nobody is watching (it comes back on the next viewer or when the screen opens). */
     private var camIdle = false
     private var idleTimer: ScheduledFuture<*>? = null
@@ -165,6 +176,29 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         return o
     }
 
+    /** Last battery state published on "<topic>/s" and when. */
+    private var lastPub: Pair<Int, Boolean>? = null
+    private var lastPubAt = 0L
+
+    /**
+     * Publishes the battery state as a retained, encrypted message on "<topic>/s". Viewer phones check it in the
+     * background every ~15 min and notify when the battery is low and not charging (alerts/BatteryAlerts).
+     * Sent when it changes, and at least every [BatteryAlerts.REFRESH_MS] so viewers can tell it's current.
+     */
+    private fun publishStatus(on: Boolean = true) {
+        val sig = signaling ?: return
+        val h = health()
+        val now = System.currentTimeMillis()
+        val state = h.optInt("bat", -1) to h.optBoolean("chg")
+        if (on && state == lastPub && now - lastPubAt < BatteryAlerts.REFRESH_MS) return
+        lastPub = state
+        lastPubAt = now
+        val msg = JSONObject().put("t", "status").put("on", on)
+        if (cfg.name.isNotEmpty()) msg.put("name", cfg.name)
+        if (on && state.first >= 0) msg.put("bat", state.first).put("chg", state.second)
+        sig.send("$topic/s", msg, retain = true)
+    }
+
     fun start() = exec.post {
         current = this
         try {
@@ -193,6 +227,11 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
                 brokersUp = up
                 status(null)
             }.also { it.start() }
+            // Battery state for viewers' background alerts, kept by the brokers (retained)
+            publishStatus()
+            timelapse.recover()
+            exec.every({ if (!stopped) timelapse.tick() }, 5, TimeUnit.SECONDS)
+            exec.every({ if (!stopped) publishStatus() }, 60, TimeUnit.SECONDS)
             status(ctx.getString(R.string.st_connecting))
         } catch (e: Exception) {
             Log.e(TAG, "start failed", e)
@@ -205,6 +244,9 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         // Every step is guarded: one failure must never leave the camera, microphone or WebRTC running.
         fun step(name: String, block: () -> Unit) = try { block() } catch (e: Exception) { Log.w(TAG, "stop: $name", e) }
         step("thermal") { thermal.stop() }
+        step("status") { publishStatus(on = false) } // viewers stop alerting about a camera that was turned off
+        step("timelapse") { track?.removeSink(timelapse); timelapse.stop(); timelapse.shutdown() } // the video is still made
+        step("files") { filePool.shutdownNow() }
         step("signaling") { signaling?.stop() }
         peers.values.toList().forEach { p -> step("peer") { removePeer(p) } }
         step("capture") { capturer?.stopCapture() }
@@ -265,7 +307,9 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
      * limited while the phone is hot so Android doesn't shut the camera down.
      */
     private fun eff(): CamConfig {
-        val c = cfg.let { it.copy(res = minOf(it.res, Rtc.maxRes(it.codec, it.aspect))) }
+        var c = cfg.let { it.copy(res = minOf(it.res, Rtc.maxRes(it.codec, it.aspect))) }
+        // Only a timelapse needs the camera: a few frames per second are plenty and keep the phone cooler
+        if (timelapseOnly()) c = c.copy(fps = minOf(c.fps, TIMELAPSE_FPS))
         return when (heat) {
             0 -> c
             1 -> c.copy(fps = minOf(c.fps, 24))
@@ -278,11 +322,29 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         ProCapturer.Controls(e.zoom, e.torch, e.night, e.ev, e.focus, e.fx, e.fy, e.fdist, e.stab, lowPower = heat > 0)
     }
 
+    /** Capture format the camera was last asked for. */
+    private var applied: Triple<Int, Int, Int>? = null
+
     private fun startCapture(cap: ProCapturer) {
         val e = eff()
         val (w, h) = sizeFor(e.res, e.aspect)
+        applied = Triple(w, h, e.fps)
         cap.startCapture(w, h, e.fps)
     }
+
+    /** Applies a changed size or frame rate from [eff] (heat, settings, timelapse-only) to the running camera. */
+    private fun refreshFormat() {
+        val cap = capturer ?: return
+        if (camIdle) return
+        val e = eff()
+        val (w, h) = sizeFor(e.res, e.aspect)
+        val f = Triple(w, h, e.fps)
+        if (f == applied) return
+        applied = f
+        cap.changeCaptureFormat(w, h, e.fps)
+    }
+
+    private fun timelapseOnly() = timelapse.active && peers.isEmpty() && previewProxy.target == null
 
     private fun applyHeat(level: Int) {
         if (stopped || level == heat) return
@@ -290,10 +352,7 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         heat = level
         val after = eff()
         capturer?.let { cap ->
-            if (before.res != after.res || before.fps != after.fps) {
-                val (w, h) = sizeFor(after.res, after.aspect)
-                cap.changeCaptureFormat(w, h, after.fps)
-            }
+            if (before.res != after.res || before.fps != after.fps) refreshFormat()
             cap.setControls(controlsFromCfg())
         }
         peers.values.forEach { applyEncoding(it.sender) }
@@ -305,18 +364,18 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
     private fun updateIdle() {
         if (stopped) return
         val cap = capturer ?: return
-        if (peers.isNotEmpty() || previewProxy.target != null) {
+        if (peers.isNotEmpty() || previewProxy.target != null || timelapse.active) {
             idleTimer?.cancel(false); idleTimer = null
             if (camIdle) {
                 camIdle = false
-                Log.i(TAG, "camera on (someone is watching)")
+                Log.i(TAG, "camera on (someone is watching or a timelapse runs)")
                 startCapture(cap)
                 status(null)
-            }
+            } else refreshFormat()
         } else if (!camIdle && idleTimer == null) {
             idleTimer = exec.later({
                 idleTimer = null
-                if (stopped || camIdle || peers.isNotEmpty() || previewProxy.target != null) return@later
+                if (stopped || camIdle || peers.isNotEmpty() || previewProxy.target != null || timelapse.active) return@later
                 Log.i(TAG, "camera resting (nobody watching)")
                 camIdle = true
                 camBusy = false
@@ -339,7 +398,7 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         cap.setControls(controlsFromCfg())
         startCapture(cap)
         helper = h; source = src; capturer = cap
-        track = factory.createVideoTrack("cam0", src).also { it.addSink(previewProxy) }
+        track = factory.createVideoTrack("cam0", src).also { it.addSink(previewProxy); it.addSink(timelapse) }
         startMic()
     }
 
@@ -402,6 +461,8 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         val newLens = m.optString("lens").takeIf { it.isNotEmpty() && it != c.lens }
             ?.let { k -> lenses.firstOrNull { it.key == k } }
         if (newLens != null) c = c.copy(lens = newLens.key, zoom = newLens.zoomPreset ?: 1f)
+        // Tapping the lens already in use (e.g. 1x after zooming to 3x) goes back to its own zoom
+        else if (m.optString("lens") == c.lens && !m.has("zoom")) c = c.copy(zoom = lenses.firstOrNull { it.key == c.lens }?.zoomPreset ?: 1f)
         if (m.has("zoom")) c = c.copy(zoom = m.getDouble("zoom").toFloat())
         if (m.has("torch")) c = c.copy(torch = m.getBoolean("torch"))
         if (m.has("night")) c = c.copy(night = m.getBoolean("night"))
@@ -427,15 +488,42 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         val reformat = after.res != before.res || after.fps != before.fps || after.aspect != before.aspect
         if (newLens != null) cap.setLens(newLens)
         cap.setControls(controlsFromCfg())
-        if (reformat) {
-            val (w, h) = sizeFor(after.res, after.aspect)
-            cap.changeCaptureFormat(w, h, after.fps)
-        }
+        if (reformat) refreshFormat()
+        m.optJSONObject("tl")?.let { timelapseCommand(it) }
         if (reformat || isUltraWide() != wasWide) peers.values.forEach { applyEncoding(it.sender) }
         Prefs.save(ctx, cfg)
         broadcastInfo()
         // Capabilities (max zoom, torch…) are only known after the camera has reopened
         if (newLens != null || reformat) exec.later({ broadcastInfo() }, 2, TimeUnit.SECONDS)
+    }
+
+    // ---------------- Timelapse ----------------
+
+    /** From a viewer: {op: "start", interval, q, minutes (auto-stop, 0 = none), stamp, rot, gallery} or {op: "stop"}. */
+    private fun timelapseCommand(o: JSONObject) {
+        when (o.optString("op")) {
+            "start" -> timelapse.start(o.optInt("interval", 10).takeIf { it in Timelapse.INTERVALS } ?: 10,
+                o.optInt("q", 1080), o.optInt("minutes").coerceIn(0, 7 * 24 * 60), o.optBoolean("stamp"),
+                o.optInt("rot"), o.optBoolean("gallery"), cfg.name)
+            "stop" -> timelapse.stop()
+        }
+    }
+
+    private var tlState = ""
+
+    /** Timelapse changed: camera on/off and its frame rate, viewers' info (photo count at most every 5 s), status. */
+    private fun onTimelapse(listChanged: Boolean) {
+        if (stopped) return
+        updateIdle()
+        val state = "${timelapse.active}|${timelapse.finishing}|${timelapse.lastEvent}"
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (listChanged || state != tlState || now - tlInfoAt >= 5000) {
+            tlState = state
+            tlInfoAt = now
+            peers.values.forEach { sendTo(it, JSONObject().put("t", "info").put("tl", timelapse.json())) }
+        }
+        if (listChanged) peers.values.forEach { it.files?.notifyChanged() }
+        status(null)
     }
 
     /** Result of testing the relay server sent by a viewer (null: not tested / none). */
@@ -484,6 +572,8 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
             // Relay server in use (never the password); ok = result of the camera's own test, null = not tested
             .put("turn", JSONObject().put("urls", cfg.turnUrls).put("user", cfg.turnUser).put("ok", turnOk ?: JSONObject.NULL))
             .put("health", health())
+            .put("tl", timelapse.json())
+            .put("viewers", connectedViewers())
             .put("lenses", JSONArray().also { a -> lenses.forEach { a.put(JSONObject().put("k", it.key).put("label", it.label).put("front", it.front)) } })
         capturer?.caps?.let {
             o.put("caps", JSONObject().put("zoomMin", it.zoomMin.toDouble()).put("zoomMax", it.zoomMax.toDouble())
@@ -576,9 +666,12 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         }) ?: return
 
         val tr = pc.addTransceiver(track, RtpTransceiver.RtpTransceiverInit(RtpTransceiver.RtpTransceiverDirection.SEND_ONLY, listOf("cam")))
+        // Before the offer, so it's part of it: timelapse videos travel over the same encrypted connection
+        val dc = pc.createDataChannel("tl", DataChannel.Init().apply { ordered = true })
         audioTrack?.let { pc.addTransceiver(it, RtpTransceiver.RtpTransceiverInit(RtpTransceiver.RtpTransceiverDirection.SEND_ONLY, listOf("cam"))) }
         applyEncoding(tr.sender)
         val p = Peer(vid, session, pc, tr.sender)
+        dc?.let { p.files = TlChannel(it, timelapse, filePool) }
         peer = p
         peers[vid] = p
         updateIdle() // wake the camera while the connection is set up
@@ -629,18 +722,28 @@ class CameraEngine(private val ctx: Context, private var cfg: CamConfig) {
         if (peers[p.viewerId] === p) peers.remove(p.viewerId)
         if (p.disposed) return
         p.disposed = true
+        p.files?.close() // before the connection: the channel can't be used once the connection is gone
         try { p.pc.dispose() } catch (e: Exception) { Log.w(TAG, "dispose", e) }
         updateIdle()
         status(null)
     }
 
+    private fun connectedViewers() = peers.values.count { it.state == PeerConnection.PeerConnectionState.CONNECTED }
+    private var lastViewers = -1
+
     private fun status(msg: String?) {
-        val viewers = peers.values.count { it.state == PeerConnection.PeerConnectionState.CONNECTED }
+        val viewers = connectedViewers()
+        // Viewers see how many people are watching: tell them whenever it changes
+        if (viewers != lastViewers) {
+            lastViewers = viewers
+            peers.values.forEach { sendTo(it, JSONObject().put("t", "info").put("viewers", viewers)) }
+        }
         val text = msg ?: when {
             camBusy -> ctx.getString(R.string.st_cam_busy)
             brokersUp == 0 -> ctx.getString(R.string.st_no_internet)
             heat > 0 -> ctx.getString(R.string.st_hot)
             viewers > 0 -> ctx.resources.getQuantityString(R.plurals.st_viewers, viewers, viewers)
+            timelapse.active -> ctx.resources.getQuantityString(R.plurals.st_timelapse, timelapse.frames, timelapse.frames)
             camIdle -> ctx.getString(R.string.st_idle)
             else -> ctx.getString(R.string.st_ready)
         }

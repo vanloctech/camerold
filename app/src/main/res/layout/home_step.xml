@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One "how it works" step: tinted icon bubble, title, explanation -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"
+    android:paddingStart="@dimen/card_pad" android:paddingEnd="@dimen/card_pad" android:paddingTop="14dp" android:paddingBottom="14dp">
+    <ImageView android:id="@+id/stepIcon" android:layout_width="44dp" android:layout_height="44dp" android:padding="11dp"
+        android:background="@drawable/bg_soft_circle" android:importantForAccessibility="no" />
+    <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+        android:layout_marginStart="16dp" android:layout_gravity="center_vertical" android:orientation="vertical">
+        <TextView android:id="@+id/stepTitle" style="@style/T.TileTitle" android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <TextView android:id="@+id/stepSub" style="@style/T.Value" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp" android:lineSpacingExtra="2dp" />
+    </LinearLayout>
+</LinearLayout>

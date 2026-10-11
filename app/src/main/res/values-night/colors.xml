@@ -12,4 +12,11 @@
     <color name="warn">#F59E0B</color>
     <color name="warn_soft">#26F59E0B</color>
     <color name="ripple">#1FFFFFFF</color>
+    <color name="home_glow">#1C2A80</color>
+    <color name="step_blue">#8C9BFF</color>
+    <color name="step_blue_soft">#2E7B8CFF</color>
+    <color name="step_violet">#B49BFF</color>
+    <color name="step_violet_soft">#2E9B7BFF</color>
+    <color name="step_green">#4ADE80</color>
+    <color name="step_green_soft">#2634D399</color>
 </resources>

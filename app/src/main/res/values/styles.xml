@@ -35,22 +35,22 @@
     <style name="T.Value"><item name="android:textSize">14sp</item><item name="android:textColor">@color/text2</item></style>
     <style name="T.Caption"><item name="android:textSize">13sp</item><item name="android:textColor">@color/text2</item><item name="android:lineSpacingExtra">3dp</item></style>
 
-    <!-- Group label above a card, aligned with the card's inner padding -->
+    <!-- Group label above a card, lined up with the card's edge -->
     <style name="SectionTitle" parent="T.Section">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">@dimen/section_gap</item>
         <item name="android:layout_marginBottom">10dp</item>
-        <item name="android:paddingStart">@dimen/card_pad</item>
-        <item name="android:paddingEnd">@dimen/card_pad</item>
+        <item name="android:paddingStart">@dimen/title_inset</item>
+        <item name="android:paddingEnd">@dimen/title_inset</item>
     </style>
-    <!-- Small explanation under a card, aligned with the card text -->
+    <!-- Small explanation under a card, lined up with the card's edge -->
     <style name="Note" parent="T.Caption">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">10dp</item>
-        <item name="android:paddingStart">@dimen/card_pad</item>
-        <item name="android:paddingEnd">@dimen/card_pad</item>
+        <item name="android:paddingStart">@dimen/title_inset</item>
+        <item name="android:paddingEnd">@dimen/title_inset</item>
     </style>
     <style name="Card">
         <item name="android:layout_width">match_parent</item>

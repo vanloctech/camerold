@@ -73,6 +73,8 @@ open class BaseActivity : Activity() {
      * From Android 15 apps are drawn edge to edge (behind the status and navigation bars). Pad the content by the bars,
      * the display cutout and the keyboard so nothing hides behind them. The window background shows through the bars.
      * Hidden bars (full screen) report no inset, so full-screen content still uses the whole screen.
+     * The insets are consumed here: otherwise a WebView inside would add them again (CSS env(safe-area-inset-*)),
+     * leaving an empty band under the status bar.
      */
     override fun onPostCreate(savedInstanceState: android.os.Bundle?) {
         super.onPostCreate(savedInstanceState)
@@ -83,7 +85,7 @@ open class BaseActivity : Activity() {
                 android.view.WindowInsets.Type.ime()
             val b = insets.getInsets(t)
             v.setPadding(b.left, b.top, b.right, b.bottom)
-            insets
+            android.view.WindowInsets.CONSUMED
         }
         root.requestApplyInsets()
     }

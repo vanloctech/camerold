@@ -33,6 +33,7 @@ topic  = "camerold/v2/" + hex(HMAC-SHA256(master, "camerold topic"))[0..32]
 - The **topic depends on the password too**. An eavesdropper can't find a camera's topic from its code
   alone, and an offline guess has to go through 600k PBKDF2 iterations per candidate password.
 - Camera listens on `<topic>/c`. Each viewer picks a random id and listens on `<topic>/v/<viewerId>`.
+- Camera publishes its battery state on `<topic>/s` as a **retained** message (see *Battery status* below).
 
 ## Packet format
 
@@ -66,12 +67,40 @@ first copy wins.
 | `offer` | camera → viewer | `sdp`, `ice` (camera's TURN servers), plus all `info` fields |
 | `answer` | viewer → camera | `sdp` |
 | `ice` | both | `c`: `{candidate, sdpMid, sdpMLineIndex}` |
-| `cfg` | viewer → camera | any of `res`, `fps`, `aspect` (`"4:3"` / `"16:9"`), `lens`, `zoom`, `torch`, `night`, `ev`, `focus`, `fx`, `fy`, `fdist`, `stab`, `heatGuard` (bool), `heatStart` (°C, 38–52), `turn` (`{urls, user, pass}` relay server typed on the viewer; empty `urls` clears it; the camera tests it) |
-| `info` | camera → viewer | current settings, `name` (camera name, may be empty), `lenses`, `caps` (capabilities), `audio`, `camBusy`, `model`, `heat` (0–3: phone is hot, quality temporarily lowered), `heatGuard` / `heatStart` (heat protection settings), `turn` (`{urls, user, ok}`: relay server in use, never the password; `ok` = the camera's own test result or null), `health` (`bat` %, `chg` charging, `temp` °C, `free` bytes, `up` seconds streaming; resent every 30 s while someone watches) |
+| `cfg` | viewer → camera | any of `res`, `fps`, `aspect` (`"4:3"` / `"16:9"`), `lens`, `zoom`, `torch`, `night`, `ev`, `focus`, `fx`, `fy`, `fdist`, `stab`, `heatGuard` (bool), `heatStart` (°C, 38–52), `turn` (`{urls, user, pass}` relay server typed on the viewer; empty `urls` clears it; the camera tests it), `tl` (timelapse: `{op: "start", interval (s: 1, 2, 5, 10, 30, 60, 300), q (720/1080), minutes (auto-stop, 0 = none), stamp, rot, gallery}` or `{op: "stop"}`) |
+| `info` | camera → viewer | current settings, `name` (camera name, may be empty), `lenses`, `caps` (capabilities), `audio`, `camBusy`, `model`, `heat` (0–3: phone is hot, quality temporarily lowered), `heatGuard` / `heatStart` (heat protection settings), `turn` (`{urls, user, ok}`: relay server in use, never the password; `ok` = the camera's own test result or null), `viewers` (people watching right now, sent again whenever it changes), `health` (`bat` %, `chg` charging, `temp` °C, `free` bytes, `up` seconds streaming; resent every 30 s while someone watches), `tl` (timelapse: `on`, `frames`, `busy` (making a video), `ver`, `free`, `event` (`storage` / `encode`), and while on: `interval`, `q`, `stopAt`, `stamp`, `startedAt`, `gallery`; also sent alone, at most every 5 s while it runs) |
 | `bye` | viewer → camera | viewer is leaving |
+| `status` | camera → `<topic>/s` (retained) | `on` (false once the camera was stopped), `bat` %, `chg` charging, `name` (if set) |
 
 `fx`/`fy` are normalized (0..1) coordinates on the frame as the viewer displays it (upright). The camera maps
 them back to sensor coordinates (`ProCapturer.meteringRegion`).
+
+## Battery status (background alerts)
+
+The camera publishes a `status` message on `<topic>/s` with the MQTT retain flag, so the broker keeps the latest one.
+It is sent when the battery level or charging state changes, at least every 15 minutes, and with `on: false` when
+streaming is stopped. A camera that reconnects to a broker publishes it again.
+
+The Android app on viewer phones checks the cameras saved in its viewer every ~15 minutes with a system job, even when
+the app is closed: it connects, subscribes to `<topic>/s`, takes the newest message from any broker, and notifies once
+when `bat` ≤ 20 % and not charging (again only after the battery went above 25 % or was charged). A status older than
+45 minutes is ignored. It keeps only the derived key and topic, not the password. Retained messages may be lost if a
+public broker restarts; the next refresh puts it back.
+
+## Timelapse videos (data channel)
+
+The camera adds a reliable, ordered data channel labelled `tl` to every offer. It carries JSON text messages and
+binary file chunks, inside the same DTLS‑encrypted connection as the video.
+
+| Viewer → camera | Camera → viewer |
+|---|---|
+| `{op: "list"}` | `{op: "list", items: [{id, name, created, frames, interval, dur, w, h, size, file}]}`, then `{op: "thumb", id, data}` (base64 JPEG) per video. Also sent unasked when the list changes. |
+| `{op: "get", id}` | `{op: "file", id, size, name}`, binary chunks of 16 KB, then `{op: "end", id}` (`cancelled: true` if cancelled) or `{op: "err", id}` |
+| `{op: "cancel"}` | stops the current download |
+| `{op: "del", id}` | the video is deleted; a new `list` follows |
+
+`id` is the start time, `yyyyMMdd-HHmmss`; the camera only accepts ids of that form. While a timelapse runs the
+camera keeps one frame every `interval` seconds as a JPEG (crash‑safe), and makes a 30 fps H.264 MP4 when it stops.
 
 ## Media
 

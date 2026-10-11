@@ -47,30 +47,43 @@
     <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></symbol>
     <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
     <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></symbol>
+    <symbol id="i-timer" viewBox="0 0 24 24"><path d="M10,2L14,2"/><path d="M12,14L15,11"/><path d="M4,14a8,8 0 1,0 16,0a8,8 0 1,0 -16,0"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7,10 L12,15 L17,10"/><path d="M12,15L12,3"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M6,3 L20,12 L6,21 L6,3z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M5,3h14a2,2 0 0,1 2,2v14a2,2 0 0,1 -2,2h-14a2,2 0 0,1 -2,-2v-14a2,2 0 0,1 2,-2z"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><path d="M5,3h14a2,2 0 0,1 2,2v14a2,2 0 0,1 -2,2h-14a2,2 0 0,1 -2,-2v-14a2,2 0 0,1 2,-2z"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M7,2h10a2,2 0 0,1 2,2v16a2,2 0 0,1 -2,2h-10a2,2 0 0,1 -2,-2v-16a2,2 0 0,1 2,-2z"/><path d="M12 18h.01"/></symbol>
   </defs>
 </svg>
 
 <!-- ============ Connect ============ -->
 <main id="login">
-  <header class="appbar">
-    <span class="brand"><img class="brand-ic" src="icon.svg" alt="">Camerold</span>
+  <header class="appbar" id="loginBar">
+    <!-- In the app: back to the home screen, and the page title moves up here (like the app's own screens) -->
+    <button class="icon-btn" id="appBack" type="button" data-i18n-label="a_back" hidden><svg class="i"><use href="#i-back"/></svg></button>
+    <span class="brand" id="brand"><img class="brand-ic" src="icon.svg" alt="">Camerold</span>
     <button class="icon-btn" id="openSettings" type="button" data-i18n-label="app_settings"><svg class="i"><use href="#i-gear"/></svg></button>
   </header>
 
   <h1 class="page-title" id="loginTitle" data-i18n="watch_title"></h1>
   <p class="page-sub" id="loginSub" data-i18n="hero_sub"></p>
 
-  <!-- Saved cameras: tap to watch, ⋮ to share or remove -->
+  <!-- Saved cameras: the last picture seen from each, tap to watch, ⋮ to share or remove -->
   <div id="camListBox" hidden>
-    <div class="group" id="camList"></div>
+    <div id="camList"></div>
     <p class="section-title" data-i18n="add_camera"></p>
   </div>
 
-  <button class="tonal" id="scanBtn" type="button"><svg class="i"><use href="#i-qr"/></svg><span data-i18n="scan_btn"></span></button>
-  <!-- No webcam (PC)? A screenshot of the camera's QR code works too: pick, paste (Ctrl+V) or drop it -->
-  <button class="text-btn" id="uploadQr" type="button"><svg class="i"><use href="#i-image"/></svg><span data-i18n="upload_qr"></span></button>
+  <!-- Ways to add a camera. No webcam (PC)? A screenshot of the camera's QR code works too: pick, paste (Ctrl+V) or drop it -->
+  <div class="group add-card">
+    <button class="row act" id="scanBtn" type="button"><span class="act-ic"><svg class="i"><use href="#i-qr"/></svg></span>
+      <div class="grow"><div class="t" data-i18n="scan_btn"></div><div class="s" data-i18n="scan_sub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
+    <button class="row act" id="uploadQr" type="button"><span class="act-ic"><svg class="i"><use href="#i-image"/></svg></span>
+      <div class="grow"><div class="t" data-i18n="upload_qr"></div><div class="s" data-i18n="upload_sub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
+    <button class="row act" id="manualToggle" type="button" hidden><span class="act-ic"><svg class="i"><use href="#i-key"/></svg></span>
+      <div class="grow"><div class="t" data-i18n="enter_code"></div><div class="s" data-i18n="enter_sub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
+  </div>
   <input type="file" id="qrFile" accept="image/*" hidden>
-  <button class="text-btn" id="manualToggle" type="button" hidden><svg class="i"><use href="#i-key"/></svg><span data-i18n="enter_code"></span></button>
   <div id="manualBox">
   <p class="or"><span data-i18n="or_enter"></span></p>
   <div class="group">
@@ -221,7 +234,8 @@
       </div>
       <div class="ctl-bottom">
         <div class="ctl-row">
-          <span class="live wait" id="liveBadge" role="img" data-i18n-label="live"><i></i></span>
+          <span class="viewers-pill" id="viewersPill" hidden><svg class="i"><use href="#i-eye"/></svg><span id="viewersN"></span></span>
+          <button class="tl-badge" id="tlBadge" hidden data-i18n-label="g_timelapse"><svg class="i"><use href="#i-timer"/></svg><span id="tlBadgeN"></span></button>
           <button class="ib sm" id="bMute" data-i18n-label="a_mute"><svg class="i"><use href="#i-mute" id="muteIcon"/></svg></button>
           <span id="zoomTxt"></span>
           <span class="grow"></span>
@@ -243,14 +257,53 @@
       <button class="chip" id="qcNight"><svg class="i"><use href="#i-moon"/></svg><span data-i18n="chip_night"></span></button>
       <button class="chip" id="qcFront" hidden><svg class="i"><use href="#i-flip"/></svg><span data-i18n="chip_front"></span></button>
       <button class="chip" id="qcRotate"><svg class="i"><use href="#i-rotate"/></svg><span data-i18n="chip_rotate"></span></button>
-      <button class="chip" id="qcInfo"><svg class="i"><use href="#i-info"/></svg><span data-i18n="chip_info"></span></button>
     </div>
   </section>
 
   <div id="scrim"></div>
   <section id="panel">
-    <div class="sheet-head"><div class="grabber" id="grabber"></div><h3 data-i18n="settings_title"></h3></div>
+    <!-- Tabs: picture settings, timelapse, the camera phone itself. Below the video in portrait, a sheet in landscape -->
+    <div class="sheet-head"><div class="grabber" id="grabber"></div>
+      <nav class="tabs" id="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="pic"><svg class="i"><use href="#i-sliders"/></svg><span data-i18n="tab_picture"></span></button>
+        <button type="button" role="tab" data-tab="tl"><svg class="i"><use href="#i-timer"/></svg><span data-i18n="g_timelapse"></span><i class="tab-dot" id="tlTabDot" hidden></i></button>
+        <button type="button" role="tab" data-tab="dev"><svg class="i"><use href="#i-phone"/></svg><span data-i18n="tab_device"></span></button>
+      </nav>
+    </div>
 
+    <!-- Timelapse on the camera phone: state and start/stop, settings (a sheet of their own), storage, videos -->
+    <div class="pane" data-pane="tl">
+      <div id="tlNone" class="tl-empty-card"><svg class="i"><use href="#i-timer"/></svg><span data-i18n="tl_unsupported"></span></div>
+      <div id="tlBox" hidden>
+        <div class="sgroup tl-card">
+          <div class="tl-head"><span class="tl-ic" id="tlIc"><svg class="i"><use href="#i-timer"/></svg></span>
+            <div class="grow"><div class="t" id="tlState"></div><div class="s" id="tlSub"></div></div></div>
+          <div class="tl-stats" id="tlStats" hidden>
+            <div><b id="tlStPhotos"></b><span data-i18n="tl_st_photos"></span></div>
+            <div><b id="tlStVideo"></b><span data-i18n="tl_st_video"></span></div>
+            <div><b id="tlStTime"></b><span data-i18n="tl_st_time"></span></div>
+          </div>
+          <button type="button" class="tl-go" id="tlGo"><svg class="i"><use href="#i-play" id="tlGoIcon"/></svg><span id="tlGoText"></span></button>
+        </div>
+        <div class="sgroup">
+          <button type="button" class="srow link" id="tlSetRow"><span class="row-ic"><svg class="i"><use href="#i-sliders"/></svg></span>
+            <div class="grow"><div class="t" data-i18n="tl_settings"></div><div class="s" id="tlSetSum"></div></div>
+            <svg class="i chev"><use href="#i-chev"/></svg></button>
+        </div>
+        <div class="sgroup store-card" id="tlStore" hidden>
+          <div class="store-head"><span data-i18n="tl_storage"></span><b id="tlStoreFree"></b></div>
+          <div class="store-bar"><i class="used" id="tlBarUsed"></i><i class="need" id="tlBarNeed"></i></div>
+          <div class="store-legend"><span><i class="used"></i><span data-i18n="tl_used"></span></span>
+            <span><i class="need"></i><span id="tlNeedTxt"></span></span><span><i class="free"></i><span data-i18n="tl_free_lbl"></span></span></div>
+          <div class="s" id="tlStoreHint"></div>
+        </div>
+        <p class="sgroup-title" data-i18n="tl_videos"></p>
+        <div class="sgroup" id="tlList"></div>
+        <p class="note" data-i18n="tl_note"></p>
+      </div>
+    </div>
+
+    <div class="pane" data-pane="pic">
     <p class="sgroup-title" data-i18n="g_picture"></p>
     <div class="sgroup">
       <label class="srow" id="rowFront" hidden><div class="grow"><div class="t" data-i18n="front_cam"></div><div class="s" data-i18n="front_cam_sub"></div></div>
@@ -296,6 +349,11 @@
         <input type="checkbox" class="switch" id="tStab"></label>
     </div>
 
+    </div>
+
+    <div class="pane" data-pane="dev">
+      <p class="sgroup-title" data-i18n="g_device"></p>
+      <div class="sgroup" id="statsHome"></div>
     <!-- Relay server for watching over 4G, typed here and sent to the camera phone (old phones are awkward to type on) -->
     <div id="camTurnBox" hidden>
       <p class="sgroup-title" data-i18n="g_cam_turn"></p>
@@ -323,7 +381,27 @@
           <div class="s" data-i18n="heat_start_sub"></div></div>
       </div>
     </div>
+    </div>
   </section>
+
+  <!-- Timelapse settings, with what they'll take: photos, video length and storage -->
+  <div id="tlDlg" class="dlg sheet" hidden>
+    <div class="sheet-card tl-sheet" role="dialog" aria-modal="true" aria-labelledby="tlDlgTitle">
+      <div class="sheet-title"><b id="tlDlgTitle" data-i18n="tl_settings"></b></div>
+      <div class="tl-est" id="tlEst"></div>
+      <div class="srow col"><div class="t" data-i18n="tl_interval"></div>
+        <div class="seg" id="selTlInt"><button data-v="2">2s</button><button data-v="5">5s</button><button data-v="10">10s</button><button data-v="30">30s</button><button data-v="60">1m</button><button data-v="300">5m</button></div></div>
+      <div class="srow col"><div class="t" data-i18n="tl_stop_after"></div>
+        <div class="seg" id="selTlDur"><button data-v="0" data-i18n="tl_never"></button><button data-v="60">1h</button><button data-v="180">3h</button><button data-v="480">8h</button><button data-v="1440">24h</button></div></div>
+      <div class="srow col"><div class="t" data-i18n="tl_quality"></div>
+        <div class="seg" id="selTlQ"><button data-v="720">HD</button><button data-v="1080">Full HD</button></div></div>
+      <label class="srow"><div class="grow"><div class="t" data-i18n="tl_stamp"></div><div class="s" data-i18n="tl_stamp_sub"></div></div>
+        <input type="checkbox" class="switch" id="tTlStamp"></label>
+      <label class="srow"><div class="grow"><div class="t" data-i18n="tl_gallery"></div><div class="s" data-i18n="tl_gallery_sub"></div></div>
+        <input type="checkbox" class="switch" id="tTlGallery"></label>
+      <button type="button" class="pill" id="tlDlgDone" data-i18n="done"></button>
+    </div>
+  </div>
 </div>
 
 <!-- Order matters: plain scripts (not ES modules) so the page also works when opened straight from disk -->
@@ -341,6 +419,7 @@
 <script src="js/qr.js"></script>
 <script src="js/share.js"></script>
 <script src="js/snapshot.js"></script>
+<script src="js/timelapse.js"></script>
 <script src="js/cams.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/main.js"></script>

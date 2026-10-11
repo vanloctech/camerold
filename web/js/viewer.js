@@ -12,7 +12,6 @@ function setStatus(text, kind) {
   $('statusText').textContent = text;
   $('camSub').textContent = text;
   $('dot').className = 'dot' + (kind === 'ok' ? ' ok' : kind === 'bad' ? ' bad' : '');
-  $('liveBadge').classList.toggle('wait', kind !== 'ok');
 }
 function toast(text, ms = 2200) {
   const t = $('toast'); t.textContent = text; t.hidden = false;
@@ -73,6 +72,7 @@ function savePatch(patch) {
     const s = JSON.parse(localStorage.getItem('camerold') || '{}');
     localStorage.setItem('camerold', JSON.stringify({ ...s, ...patch }));
   } catch {}
+  if ('cams' in patch) syncAppCams(); // the app's background battery alerts (cams.js)
 }
 /** Saves the relay server sent by the camera so it can be used right away next time. */
 function rememberCamIce(ice) {
@@ -122,10 +122,12 @@ async function start(cam) {
 }
 
 function stopAll() {
+  saveCamShot(); // the last picture, for the cameras list
   clearInterval(S.helloTimer); clearInterval(S.statsTimer); clearTimeout(S.discTimer);
   if (S.sig) { try { sendCam({ t: 'bye' }); } catch {} setTimeout((sig => () => sig.stop())(S.sig), 300); }
-  closePc(); S.sig = null;
+  closePc(); S.sig = null; tlReset();
   $('video').srcObject = null; resetOverlay(); $('heatPill').hidden = true; $('warnBadge').hidden = true;
+  S.viewers = 0; $('viewersPill').hidden = true;
   S.health = null; S.heat = 0; S.warnRank = 0; clearTimeout(S.warnTimer);
   setSheet(false); setFullscreen(false); appWatching(false);
   $('viewer').hidden = true; $('login').hidden = false;
@@ -169,6 +171,7 @@ function closePc() {
   if (S.pc) { S.pc.ontrack = S.pc.onicecandidate = S.pc.onconnectionstatechange = null; S.pc.close(); }
   S.pc = null; S.remoteSet = false; S.pendingIce = [];
   clearInterval(S.statsTimer);
+  if (typeof tlDropChannel === 'function') tlDropChannel(); // a new connection brings a new one
 }
 
 async function onSignal(m) {
@@ -203,6 +206,7 @@ async function handleOffer(sdp) {
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
   };
   pc.onicecandidate = e => { if (e.candidate && e.candidate.candidate) sendCam({ t: 'ice', c: e.candidate.toJSON() }); };
+  pc.ondatachannel = e => { if (e.channel.label === 'tl') tlAttach(e.channel); }; // timelapse videos (timelapse.js)
   pc.onconnectionstatechange = () => {
     if (S.pc !== pc) return;
     const st = pc.connectionState;
@@ -253,6 +257,7 @@ function updateInfo(m) {
   if (name) setCamName(name);
   else if (m.model) setCamName(t('cam_default') + ' · ' + m.model);
   if (m.name !== undefined) rememberCamName(name);
+  if (m.caps?.w) { S.capW = m.caps.w; S.capH = m.caps.h; } // capture size, for timelapse estimates
   if (m.caps?.maxRes) {
     // Qualities the camera phone's video chip can't encode are greyed out
     S.maxRes = m.caps.maxRes;
@@ -305,6 +310,8 @@ function updateInfo(m) {
   if (m.focus) { setSeg('selFocus', m.focus); $('rowFdist').hidden = m.focus !== 'manual'; }
   if (m.fdist != null && !fdistDragging) { $('fdist').value = m.fdist; showFdist(); }
   if (m.turn) showCamTurn(m.turn);
+  if (m.tl) onTimelapseInfo(m.tl);
+  if (m.viewers != null) showViewers(m.viewers);
   if (m.heatGuard != null) {
     $('heatGroupBox').hidden = false;
     setTog('tHeat', m.heatGuard);
@@ -318,6 +325,14 @@ function updateInfo(m) {
     if (m.camBusy) { S.busyShown = true; showProblem('busy', 'cam_busy_t', 'cam_busy'); }
     else if (S.busyShown) { S.busyShown = false; hideOverlay(); }
   }
+}
+
+/** People watching this camera right now (this device included), from the camera. */
+function showViewers(n) {
+  S.viewers = Math.max(1, n || 0); // the count can lag a moment behind our own connection
+  $('viewersN').textContent = fmtNum(S.viewers);
+  $('viewersPill').hidden = false;
+  $('viewersPill').title = t('n_watching', { n: S.viewers }); $('viewersPill').setAttribute('aria-label', $('viewersPill').title);
 }
 
 /**
@@ -455,9 +470,9 @@ function updateMode() {
     v.classList.toggle('immersive', imm); v.classList.toggle('stacked', !imm);
     setSheet(false);
   }
-  // Connection info: overlaid on the video in landscape, a card below the video in portrait
-  const stats = $('stats'), home = imm ? $('player') : $('below');
-  if (stats.parentElement !== home) home.appendChild(stats);
+  // Connection info: overlaid on the video in landscape (info button), in the "Camera phone" tab in portrait
+  const stats = $('stats'), home = imm ? $('player') : $('statsHome');
+  if (stats.parentElement !== home) { home.appendChild(stats); stats.hidden = imm; }
   $('fullIcon').setAttribute('href', S.fs ? '#i-unfull' : '#i-full');
   $('backIcon').setAttribute('href', S.fs ? '#i-down' : '#i-back');
   requestAnimationFrame(layoutVideo);
@@ -539,10 +554,28 @@ function setSheet(open) {
   $('panel').classList.toggle('open', open); $('scrim').classList.toggle('show', open);
   if (open) showCtl(false); else showCtl();
 }
-function openSettings() {
-  if ($('viewer').classList.contains('immersive')) setSheet(!$('panel').classList.contains('open'));
-  else $('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+// ---------- Tabs: picture / timelapse / camera phone ----------
+function selectTab(name) {
+  S.tab = name;
+  for (const b of $('tabs').querySelectorAll('button')) { const on = b.dataset.tab === name; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); }
+  for (const p of document.querySelectorAll('#panel .pane')) p.hidden = p.dataset.pane !== name;
+  // Portrait: when scrolled down, start the new tab right under the tabs (which stick under the video)
+  const v = $('viewer');
+  if (v.classList.contains('stacked')) { const top = $('panel').offsetTop - $('player').offsetHeight; if (v.scrollTop > top) v.scrollTop = top; }
+  if (name === 'tl' && typeof tlRequestList === 'function') tlRequestList();
 }
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) selectTab(b.dataset.tab); });
+/** Shows a tab: the sheet over the video in landscape, scrolled into view below the video in portrait. */
+function openPanel(tab) {
+  if (tab) selectTab(tab);
+  if ($('viewer').classList.contains('immersive')) setSheet(true);
+  else { const v = $('viewer'); v.scrollTo({ top: $('panel').offsetTop - $('player').offsetHeight, behavior: 'smooth' }); }
+}
+function openSettings() {
+  if ($('viewer').classList.contains('immersive') && $('panel').classList.contains('open')) setSheet(false);
+  else openPanel(S.tab === 'dev' || S.tab === 'tl' ? S.tab : 'pic');
+}
+selectTab('pic');
 $('scrim').onclick = () => setSheet(false);
 (() => { // drag the handle down to close
   let y0 = null;

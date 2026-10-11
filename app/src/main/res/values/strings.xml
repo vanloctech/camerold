@@ -7,7 +7,7 @@
     <string name="home_camera_sub">Place it where you want to watch</string>
     <string name="home_viewer_title">Watch a camera</string>
     <string name="home_viewer_sub">Live, from anywhere</string>
-    <string name="home_footer">Free · Private and encrypted · Nothing is recorded</string>
+    <string name="home_footer">Free · Private and encrypted · No cloud</string>
     <string name="back">Back</string>
     <string name="settings_title">Settings</string>
     <string name="section_general">General</string>
@@ -40,14 +40,24 @@
     <string name="sum_sound_off">no sound</string>
     <string name="banner_bg">Android may stop the camera in the background</string>
     <string name="banner_bg_fix">Allow</string>
-    <string name="home_question_sub2">Choose what this phone does. You can switch any time.</string>
+    <string name="home_question">What will this phone do?</string>
+    <string name="home_tagline">Old phone, live camera</string>
+    <string name="home_live">LIVE</string>
+    <!-- Low-battery alerts on viewer phones (alerts/BatteryAlerts) -->
+    <string name="section_alerts">Notifications</string>
+    <string name="alerts_title">Camera battery alerts</string>
+    <string name="alerts_sub" formatted="false">When a camera saved on this phone is at 20% or less and not charging</string>
+    <string name="alerts_blocked">Notifications are off for Camerold. Tap to allow.</string>
+    <string name="alerts_note">Checked about every 15–30 minutes, even when the app is closed. Android may check less often while the phone sleeps; if alerts come late, set Camerold\'s battery usage to Unrestricted.</string>
+    <string name="alerts_channel">Camera alerts</string>
+    <string name="alert_bat_low">Battery at %1$d%% and not charging. Check the charger.</string>
     <string name="home_how">How it works</string>
     <string name="how_1">Turn an old phone into a camera</string>
     <string name="how_1_sub">Place it where you want to watch and start streaming</string>
     <string name="how_2">Scan its QR code from your phone</string>
     <string name="how_2_sub">Watch from the app or any browser, at home or over 4G</string>
     <string name="how_3">Private by design</string>
-    <string name="how_3_sub">Video goes directly between your devices, encrypted. Nothing is recorded.</string>
+    <string name="how_3_sub">Video goes directly between your devices, encrypted. Nothing is uploaded anywhere.</string>
     <string name="section_camera">Camera</string>
     <string name="tile_qr">QR code</string>
     <string name="tile_qr_sub">For viewers to scan</string>
@@ -179,6 +189,10 @@
     <string name="lens_front_zoom">Front %sx</string>
     <string name="crash_title">The app ran into a problem</string>
     <string name="crash_copy">Copy details</string>
+    <plurals name="st_timelapse">
+        <item quantity="one">Timelapse running · %d photo</item>
+        <item quantity="other">Timelapse running · %d photos</item>
+    </plurals>
     <plurals name="st_viewers">
         <item quantity="one">%d person watching</item>
         <item quantity="other">%d people watching</item>

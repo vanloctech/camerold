@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home screen background: a soft glow of the brand blue at the top, fading into the normal background -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape><solid android:color="@color/bg" /></shape></item>
+    <item android:gravity="top" android:height="420dp">
+        <shape><gradient android:angle="270" android:startColor="@color/home_glow" android:endColor="#00000000" /></shape>
+    </item>
+</layer-list>

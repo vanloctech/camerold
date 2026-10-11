@@ -4,7 +4,7 @@ $('go').onclick = () => start();
 $('pass').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
 $('bBack').onclick = () => { if (S.fs) setFullscreen(false); else stopAll(); };
 $('bPanel').onclick = openSettings;
-$('bStats').onclick = toggleStats; $('qcInfo').onclick = toggleStats;
+$('bStats').onclick = toggleStats;
 $('bMute').onclick = toggleMute; $('qcAudio').onclick = toggleMute;
 $('bSnap').onclick = takeSnapshot;
 $('camTurnSend').onclick = sendCamTurn;
@@ -31,8 +31,18 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+// In the app the sign-in page is a screen like the others: back arrow + title in the top bar
+if (IN_APP) {
+  document.documentElement.classList.add('in-app');
+  $('appBack').hidden = false;
+  $('appBack').onclick = () => { if (window.CameroldApp?.close) CameroldApp.close(); else history.back(); };
+  $('brand').hidden = true;
+  $('openSettings').before($('loginTitle'));
+}
+
 // ====================== Start ======================
 applyI18n();
+$('statsHome').dataset.empty = t('dev_waiting');
 initTheme();
 initSettings();
 loadSaved();

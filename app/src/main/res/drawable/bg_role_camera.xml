@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home "Use as camera" card: the logo's blue gradient -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient android:angle="315" android:startColor="#5A8FFF" android:centerColor="#3D5AFE" android:endColor="#2337C6" />
+    <corners android:radius="28dp" />
+</shape>

@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.4.0
+- **Timelapse**: start and stop it from a viewer; the camera phone takes a photo every 2 s to 5 min and makes a
+  fast‑forward video when it stops. Options: auto‑stop after 1–24 h, HD or Full HD, date and time on the video, also
+  save to the camera's gallery. Viewers list, download and delete the videos straight from the camera phone, end‑to‑end
+  encrypted. Light on heat: while only a timelapse needs the camera it runs at 10 fps, nothing is encoded until the
+  end, and it stops by itself when the camera phone is nearly out of storage. An unfinished timelapse (crash, phone
+  restarted) is turned into a video the next time the camera starts.
+- **Camera battery alerts**: the app on a viewer phone notifies you when a saved camera is at 20 % or less and not
+  charging, even when the app is closed. No push server: the camera leaves an encrypted battery status on the MQTT
+  brokers, and the viewer phone checks it about every 15–30 minutes (Settings → Notifications to turn it off).
+- **Cleaner watch screen**: smaller player buttons and no red dot; below the video, three tabs (Picture, Timelapse,
+  Device) instead of one long list. Timelapse settings open in their own sheet, with estimates (photos, video length
+  and size, storage needed) and a bar showing the camera phone's storage.
+- **Your cameras**: each saved camera shows the last picture seen from it; adding a camera is one card of options.
+- Viewers see how many people are watching (badge on the video, status line, Device tab).
+- Tapping the lens already in use (e.g. 1× after zooming to 3×) goes back to that lens's own zoom.
+- Group titles and notes line up with the cards' edge, in the app and the web viewer.
+- New home screen: colored cards with illustrations for the two roles, a "LIVE" badge while this phone is streaming,
+  and colored steps in "How it works".
+- In the app's viewer, the sign‑in page has a back arrow and its title in the top bar, like the other screens.
+- Fixed an empty band under the status bar in the app's viewer on Android 15+ with recent WebView versions.
+
 ## 3.3.0
 - **New look**, inspired by SmartThings: dashboard tiles for the main choices and for saved cameras, grouped settings
   cards, an indigo‑blue primary color, and one row style everywhere (same type sizes, same text edge, chevrons on

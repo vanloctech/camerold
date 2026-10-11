@@ -14,7 +14,7 @@ import okio.ByteString
 import okio.ByteString.Companion.toByteString
 
 /**
- * Minimal MQTT 3.1.1 client over WebSocket (QoS 0 only: CONNECT / SUBSCRIBE / PUBLISH / PING).
+ * Minimal MQTT 3.1.1 client over WebSocket (QoS 0 only: CONNECT / SUBSCRIBE / PUBLISH / PING, retained messages).
  * Uses free public brokers as the "rendezvous" (signaling) channel for WebRTC.
  * All callbacks run on [exec] (single-threaded), so no locking is needed.
  */
@@ -82,8 +82,9 @@ class MqttWs(
         send(packet(0x82, u16(packetId) + str(topic) + byteArrayOf(0)))
     }
 
-    fun publish(topic: String, payload: ByteArray) {
-        if (connected) send(packet(0x30, str(topic) + payload))
+    /** [retain]: the broker keeps the last message of the topic and hands it to anyone who subscribes later. */
+    fun publish(topic: String, payload: ByteArray, retain: Boolean = false) {
+        if (connected) send(packet(if (retain) 0x31 else 0x30, str(topic) + payload))
     }
 
     private fun open() {
