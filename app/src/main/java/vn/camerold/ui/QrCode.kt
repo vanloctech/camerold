@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
 import android.net.Uri
@@ -16,7 +17,7 @@ import com.google.zxing.qrcode.encoder.Encoder
 /**
  * "Quick view" QR code: camerold://join?r=ID&k=PASSWORD - readable by both the viewer app and the web page.
  * Drawn in the app's style (same design as web/js/share.js): soft-rounded modules, rounded corner markers in the
- * accent gradient and a camera badge in the middle. Error correction H (30%), or Q (25%) for long links, keeps it
+ * accent gradient and the app logo in the middle. Error correction H (30%), or Q (25%) for long links, keeps it
  * readable under the badge.
  */
 object QrCode {
@@ -28,9 +29,10 @@ object QrCode {
         "camerold://join?r=${Uri.encode(room)}&k=${Uri.encode(password)}" +
             (broker?.let { "&b=${Uri.encode(it)}" + if (publicBackup) "" else "&p=0" } ?: "")
 
-    fun joinUri(c: vn.camerold.data.CamConfig): String {
+    /** [viewOnly]: the second link, for people who may watch but not change anything (CamConfig.viewPassword). */
+    fun joinUri(c: vn.camerold.data.CamConfig, viewOnly: Boolean = false): String {
         val own = if (c.brokerMode == vn.camerold.signaling.Brokers.MODE_OWN) vn.camerold.signaling.Brokers.ownUrl(c) else null
-        return joinUri(vn.camerold.signaling.SigCrypto.normalizeRoom(c.room), c.password, own, c.brokerBackup)
+        return joinUri(vn.camerold.signaling.SigCrypto.normalizeRoom(c.room), if (viewOnly) c.viewPassword else c.password, own, c.brokerBackup)
     }
 
     private const val MARGIN = 2           // quiet zone, in modules (the white card adds more)
@@ -82,35 +84,57 @@ object QrCode {
             c.drawRoundRect(RectF(x0 + 2 * cell, y0 + 2 * cell, x0 + 5 * cell, y0 + 5 * cell), cell, cell, accent)
         }
 
-        // Center badge: white gap, accent rounded square, camera glyph
+        // Center badge: white gap, then the app logo
         val bx = o + b0 * cell; val bw = badgeMods * cell
         val inset = cell * 0.5f
         c.drawRoundRect(RectF(bx, bx, bx + bw, bx + bw), bw * 0.3f, bw * 0.3f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE })
-        val tile = RectF(bx + inset, bx + inset, bx + bw - inset, bx + bw - inset)
-        c.drawRoundRect(tile, tile.width() * 0.28f, tile.width() * 0.28f, accent)
-        drawCamera(c, tile)
+        drawLogo(c, RectF(bx + inset, bx + inset, bx + bw - inset, bx + bw - inset))
         return bmp
     }
 
-    /** Same camera outline as the app icon (24x24 viewBox), white stroke, scaled into [t]. */
-    private fun drawCamera(c: Canvas, t: RectF) {
-        val s = t.width() * 0.62f / 24f
+    /** The code to save or send: QR with the camera's name and which link it is under it, as PNG. */
+    fun sharePng(text: String, name: String, role: String): ByteArray {
+        val w = 1080; val pad = 60
+        val bmp = Bitmap.createBitmap(w, w + 190, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+        c.drawColor(Color.WHITE)
+        c.drawBitmap(bitmap(text, w - 2 * pad), pad.toFloat(), pad.toFloat(), null)
         val p = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE; style = Paint.Style.STROKE; strokeWidth = 2f * s
-            strokeJoin = Paint.Join.ROUND; strokeCap = Paint.Cap.ROUND
+            color = INK; textSize = 52f; textAlign = Paint.Align.CENTER
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
         }
+        c.drawText(ellipsize(name, p, w - 2f * pad), w / 2f, w + 40f, p)
+        p.apply { color = 0xFF6A707B.toInt(); textSize = 38f; typeface = android.graphics.Typeface.DEFAULT }
+        c.drawText(ellipsize("$role · Camerold", p, w - 2f * pad), w / 2f, w + 110f, p)
+        return java.io.ByteArrayOutputStream().also { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+    }
+
+    private fun ellipsize(s: String, p: Paint, max: Float): String {
+        if (p.measureText(s) <= max) return s
+        var t = s
+        while (t.isNotEmpty() && p.measureText("$t…") > max) t = t.dropLast(1)
+        return "$t…"
+    }
+
+    /** The app logo (web/icon.svg, ic_launcher_*): a phone whose screen is a camera lens, on the blue tile, scaled into [t]. */
+    private fun drawLogo(c: Canvas, t: RectF) {
         c.save()
-        c.translate(t.centerX() - 12 * s, t.centerY() - 12 * s)
-        c.scale(s, s)
-        p.strokeWidth = 2f
-        val body = Path().apply {
-            moveTo(3f, 8.5f); arcTo(RectF(3f, 6f, 8f, 11f), 180f, 90f, false); lineTo(7.3f, 6f); lineTo(8.9f, 4f)
-            lineTo(15.1f, 4f); lineTo(16.7f, 6f); lineTo(18.5f, 6f); arcTo(RectF(16f, 6f, 21f, 11f), 270f, 90f, false)
-            lineTo(21f, 17.5f); arcTo(RectF(16f, 15f, 21f, 20f), 0f, 90f, false); lineTo(5.5f, 20f)
-            arcTo(RectF(3f, 15f, 8f, 20f), 90f, 90f, false); close()
+        c.translate(t.left, t.top)
+        c.scale(t.width() / 108f, t.width() / 108f)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(0f, 0f, 108f, 108f, 0xFF5A8FFF.toInt(), 0xFF1E4ED8.toInt(), Shader.TileMode.CLAMP)
         }
-        c.drawPath(body, p)
-        c.drawCircle(12f, 13f, 3.8f, p)
+        c.drawRoundRect(RectF(0f, 0f, 108f, 108f), 30f, 30f, p)
+        c.scale(1.05f, 1.05f, 54f, 54f)
+        p.shader = null; p.color = Color.WHITE; p.style = Paint.Style.STROKE; p.strokeWidth = 5f
+        c.drawRoundRect(RectF(36f, 27f, 72f, 81f), 9f, 9f, p)
+        p.style = Paint.Style.FILL
+        c.drawCircle(54f, 54f, 11f, p)
+        p.shader = RadialGradient(52f, 51.5f, 8.5f, intArrayOf(0xFF3D7BFF.toInt(), 0xFF1A3C9E.toInt(), 0xFF0E2361.toInt()),
+            floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP)
+        c.drawCircle(54f, 54f, 6.5f, p)
+        p.shader = null; p.color = 0xE6FFFFFF.toInt()
+        c.drawCircle(51.8f, 51.8f, 1.8f, p)
         c.restore()
     }
 }

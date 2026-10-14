@@ -22,6 +22,33 @@ object Gallery {
         }
     }
 
+    /** Saves a picture to Pictures/Camerold. Android 9 and older: the caller has the storage permission. */
+    fun saveImage(ctx: Context, name: String, bytes: ByteArray, mime: String): Boolean = try {
+        val file = safeName(name)
+        if (Build.VERSION.SDK_INT >= 29) {
+            val cr = ctx.contentResolver
+            val uri = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, file)
+                put(MediaStore.Images.Media.MIME_TYPE, mime)
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Camerold")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            })!!
+            cr.openOutputStream(uri)!!.use { it.write(bytes) }
+            cr.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+        } else {
+            @Suppress("DEPRECATION")
+            val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Camerold")
+            dir.mkdirs()
+            val f = File(dir, file)
+            f.writeBytes(bytes)
+            android.media.MediaScannerConnection.scanFile(ctx, arrayOf(f.path), arrayOf(mime), null)
+        }
+        true
+    } catch (e: Exception) {
+        android.util.Log.w("Gallery", "saveImage", e)
+        false
+    }
+
     fun safeName(name: String) = name.replace(Regex("[\\\\/:*?\"<>|]"), " ").trim().take(120)
 
     /** Null when it can't be written (no permission on Android 9 and older, or storage error). */

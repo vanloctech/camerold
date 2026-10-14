@@ -1,6 +1,4 @@
-<p align="center"><img src="docs/logo.svg" width="112" alt="Logo Camerold"></p>
-
-<h1 align="center">Camerold</h1>
+<p align="center"><img src="docs/banner.vi.jpg" width="100%" alt="Camerold: màn hình chính, xem camera trực tiếp, và máy camera sẵn sàng phát"></p>
 
 <p align="center">
   <b>Biến điện thoại Android cũ thành camera an ninh xem trực tiếp.</b><br>
@@ -18,7 +16,7 @@
 <p align="center">
   <a href="../../releases/latest/download/Camerold.apk"><img alt="Tải Camerold.apk" src="https://img.shields.io/badge/T%E1%BA%A3i%20v%E1%BB%81-Camerold.apk-2e6bf0?style=for-the-badge&logo=android&logoColor=white"></a>
 </p>
-<p align="center"><a href="../../releases">Tất cả phiên bản</a> · <a href="README.md">English</a></p>
+<p align="center"><a href="https://vanloctech.github.io/camerold/"><b>Mở trang xem trên web</b></a> · <a href="../../releases">Tất cả phiên bản</a> · <a href="README.md">English</a></p>
 
 ---
 
@@ -114,7 +112,10 @@ Bạn cũng có thể nhập mã camera và mật khẩu thay vì quét.
 
 ## Xem bằng máy tính
 
-Trang xem là trang web tĩnh trong thư mục [`web/`](web), đặt ở đâu cũng chạy.
+**Nhanh nhất:** mở **<https://vanloctech.github.io/camerold/>** bằng trình duyệt hiện đại bất kỳ, không cần cài hay tự dựng web.
+Đây là trang tĩnh: hình ảnh và mật khẩu chỉ đi giữa trình duyệt của bạn và máy camera, mã hoá đầu cuối.
+
+Trang xem là trang web tĩnh trong thư mục [`web/`](web), nên bạn cũng có thể tự đặt một bản riêng:
 
 - **GitHub Pages** (đã có sẵn workflow): trong repo của bạn, mở **Settings → Pages → Source: GitHub Actions**.
   Trang xem sẽ có ở `https://<user>.github.io/<repo>/`.

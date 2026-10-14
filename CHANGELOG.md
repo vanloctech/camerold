@@ -1,5 +1,34 @@
 # Changelog
 
+## 3.5.0
+- **Continuous recording**: the camera phone can record all the time, like a security camera's recorder, also when
+  nobody watches. HEVC (or H.264) at HD or Full HD, 10 or 15 fps, one video per half hour, written in one‑minute pieces
+  so a crash or power cut loses at most a minute. Old recordings are deleted by themselves (after 3–30 days, or when
+  storage runs short); "keep" protects one. Viewers browse them by day on a 24‑hour timeline, download a whole video
+  or just a cut of it (no re‑encoding), keep and delete them, end‑to‑end encrypted. Viewers on the view‑only link see
+  them only if the owner allows it.
+- **Recordings on the camera phone**: Camera settings → Recordings on this phone: storage used, recordings by day,
+  watch them, save one to the gallery, delete one, all of them, or those in a date and time span.
+- **View‑only link**: a second QR code / password for people who may watch but not change anything; it can be reset
+  to lock out everyone who had the old one.
+- **App lock**: an optional 6‑digit PIN to open Camerold, unlockable with the phone's fingerprint or face, locking
+  as soon as you leave the app or after 1 or 5 minutes. The camera keeps streaming and recording while it's locked.
+- **Picture in picture** while watching live, in the app (also when leaving it) and in browsers that have it.
+- **Player controls by priority**: full screen, picture in picture, rotate, front/back camera and light sit on the
+  video; on narrow screens the least important ones move out of the way (they stay in the chips and settings).
+  Holding the light button flashes the camera phone's light until you let go.
+- **Tablets and foldables**: the watch screen puts the video and its settings side by side; the camera screen shows
+  the preview next to its controls; home and settings use a centered column instead of a stretched phone layout.
+- **Your cameras** (web): a grid of picture cards with a colour per camera, the latest one featured on phones, and the
+  ways to add a camera as tiles.
+- **QR codes**: the app's logo in the middle; save the code as a picture or share it straight to a chat app; on the
+  web, paste a copied QR picture or camerold:// link instead of downloading and uploading it.
+- The README links the hosted web viewer (vanloctech.github.io/camerold) for watching without hosting your own.
+- Fixed: a recording was split into several short pieces whenever a viewer connected (the camera changes its format);
+  the viewer's recording list didn't update when recording stopped before the half hour.
+- Hardening: view‑only viewers can't delete timelapse videos; GitHub Actions pinned to exact versions, with signing
+  secrets only given to the steps that need them; stricter content security policy on the privacy page.
+
 ## 3.4.0
 - **Timelapse**: start and stop it from a viewer; the camera phone takes a photo every 2 s to 5 min and makes a
   fast‑forward video when it stops. Options: auto‑stop after 1–24 h, HD or Full HD, date and time on the video, also

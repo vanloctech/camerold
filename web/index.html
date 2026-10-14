@@ -2,6 +2,8 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<!-- Only this page's own scripts run; network only to MQTT brokers (wss); no plugins, no other sites can embed forms or a base URL -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' wss:; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#f4f4f6" id="themeColor">
 <meta name="description" content="Camerold viewer – watch an old Android phone as a live security camera, peer-to-peer and end-to-end encrypted.">
@@ -23,6 +25,7 @@
     <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><path d="M2,12a10,10 0 1,0 20,0a10,10 0 1,0 -20,0"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
     <symbol id="i-full" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+    <symbol id="i-pip" viewBox="0 0 24 24"><path d="M21 9V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><rect x="12" y="13" width="10" height="7" rx="2"/></symbol>
     <symbol id="i-unfull" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></symbol>
     <symbol id="i-vol" viewBox="0 0 24 24"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></symbol>
     <symbol id="i-mute" viewBox="0 0 24 24"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M22,9L16,15"/><path d="M16,9L22,15"/></symbol>
@@ -52,7 +55,12 @@
     <symbol id="i-play" viewBox="0 0 24 24"><path d="M6,3 L20,12 L6,21 L6,3z"/></symbol>
     <symbol id="i-stop" viewBox="0 0 24 24"><path d="M5,3h14a2,2 0 0,1 2,2v14a2,2 0 0,1 -2,2h-14a2,2 0 0,1 -2,-2v-14a2,2 0 0,1 2,-2z"/></symbol>
     <symbol id="i-film" viewBox="0 0 24 24"><path d="M5,3h14a2,2 0 0,1 2,2v14a2,2 0 0,1 -2,2h-14a2,2 0 0,1 -2,-2v-14a2,2 0 0,1 2,-2z"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></symbol>
+    <symbol id="i-rec" viewBox="0 0 24 24"><path d="M16,13l5.223,3.482a0.5,0.5 0 0,0 0.777,-0.416V7.87a0.5,0.5 0 0,0 -0.752,-0.432L16,10.5"/><path d="M4,6h10a2,2 0 0,1 2,2v8a2,2 0 0,1 -2,2h-10a2,2 0 0,1 -2,-2v-8a2,2 0 0,1 2,-2z"/></symbol>
+    <symbol id="i-cut" viewBox="0 0 24 24"><path d="M3,6a3,3 0 1,0 6,0a3,3 0 1,0 -6,0"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><path d="M3,18a3,3 0 1,0 6,0a3,3 0 1,0 -6,0"/><path d="M14.8 14.8 20 20"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
     <symbol id="i-phone" viewBox="0 0 24 24"><path d="M7,2h10a2,2 0 0,1 2,2v16a2,2 0 0,1 -2,2h-10a2,2 0 0,1 -2,-2v-16a2,2 0 0,1 2,-2z"/><path d="M12 18h.01"/></symbol>
+    <symbol id="i-paste" viewBox="0 0 24 24"><path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M16 4h2a2 2 0 0 1 2 2v2M11 14h10"/><path d="m17 10 4 4-4 4"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M15,5a3,3 0 1,0 6,0a3,3 0 1,0 -6,0"/><path d="M3,12a3,3 0 1,0 6,0a3,3 0 1,0 -6,0"/><path d="M15,19a3,3 0 1,0 6,0a3,3 0 1,0 -6,0"/><path d="M8.59,13.51L15.42,17.49"/><path d="M15.41,6.51L8.59,10.49"/></symbol>
   </defs>
 </svg>
 
@@ -80,6 +88,8 @@
       <div class="grow"><div class="t" data-i18n="scan_btn"></div><div class="s" data-i18n="scan_sub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
     <button class="row act" id="uploadQr" type="button"><span class="act-ic"><svg class="i"><use href="#i-image"/></svg></span>
       <div class="grow"><div class="t" data-i18n="upload_qr"></div><div class="s" data-i18n="upload_sub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
+    <button class="row act" id="pasteQr" type="button" hidden><span class="act-ic"><svg class="i"><use href="#i-paste"/></svg></span>
+      <div class="grow"><div class="t" data-i18n="paste_qr"></div><div class="s" id="pasteSub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
     <button class="row act" id="manualToggle" type="button" hidden><span class="act-ic"><svg class="i"><use href="#i-key"/></svg></span>
       <div class="grow"><div class="t" data-i18n="enter_code"></div><div class="s" data-i18n="enter_sub"></div></div><svg class="i chev"><use href="#i-chev"/></svg></button>
   </div>
@@ -107,7 +117,9 @@
 <div id="camMenu" class="dlg sheet" hidden>
   <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="camMenuTitle">
     <div class="sheet-title"><b id="camMenuTitle"></b><span id="camMenuSub"></span></div>
-    <button class="sheet-btn" id="camMenuShare" type="button"><svg class="i"><use href="#i-qr"/></svg><span data-i18n="share_t"></span></button>
+    <button class="sheet-btn" id="camMenuShare" type="button"><svg class="i"><use href="#i-qr"/></svg><span id="camMenuShareText" data-i18n="share_t"></span></button>
+    <!-- Owners only: the camera's view-only code, for family and friends -->
+    <button class="sheet-btn" id="camMenuShareView" type="button" hidden><svg class="i"><use href="#i-eye"/></svg><span data-i18n="share_view"></span></button>
     <button class="sheet-btn danger" id="camMenuDelete" type="button"><svg class="i"><use href="#i-trash"/></svg><span data-i18n="cam_delete"></span></button>
     <button class="sheet-btn muted" id="camMenuCancel" type="button" data-i18n="cancel"></button>
   </div>
@@ -184,7 +196,8 @@
 
 <!-- ============ QR for another viewer ============ -->
 <div id="qrDlg" class="dlg" hidden>
-  <div class="qr-card" id="qrBox" role="dialog" aria-modal="true" data-i18n-label="share_t"></div>
+  <div class="qr-card" role="dialog" aria-modal="true" data-i18n-label="share_t"><div id="qrBox"></div><div class="qr-cap" id="qrCap" hidden></div>
+    <div class="qr-acts"><button type="button" id="qrSave"><svg class="i"><use href="#i-download"/></svg><span data-i18n="qr_save"></span></button><button type="button" id="qrShare" hidden><svg class="i"><use href="#i-share"/></svg><span data-i18n="qr_share"></span></button></div></div>
 </div>
 
 <!-- ============ QR scanner ============ -->
@@ -237,25 +250,31 @@
           <span class="viewers-pill" id="viewersPill" hidden><svg class="i"><use href="#i-eye"/></svg><span id="viewersN"></span></span>
           <button class="tl-badge" id="tlBadge" hidden data-i18n-label="g_timelapse"><svg class="i"><use href="#i-timer"/></svg><span id="tlBadgeN"></span></button>
           <button class="ib sm" id="bMute" data-i18n-label="a_mute"><svg class="i"><use href="#i-mute" id="muteIcon"/></svg></button>
-          <span id="zoomTxt"></span>
+          <span id="zoomTxt" class="owner-only"></span>
           <span class="grow"></span>
-          <div id="lenses"></div>
+          <div id="lenses" class="owner-only"></div>
+          <!-- Least important first: when the bar is too narrow they're hidden in this order (fitCtl), the chips and settings still have them -->
+          <button class="ib sm owner-only" id="bTorch" data-i18n-label="a_torch" hidden><svg class="i"><use href="#i-torch"/></svg></button>
+          <button class="ib sm owner-only" id="bFlip" data-i18n-label="a_flip" hidden><svg class="i"><use href="#i-flip"/></svg></button>
           <button class="ib sm" id="bRotate" data-i18n-label="a_rotate"><svg class="i"><use href="#i-rotate"/></svg></button>
+          <button class="ib sm" id="bPip" data-i18n-label="a_pip" hidden><svg class="i"><use href="#i-pip"/></svg></button>
           <button class="ib sm" id="bFull" data-i18n-label="a_full"><svg class="i"><use href="#i-full" id="fullIcon"/></svg></button>
         </div>
-        <input type="range" id="zoomBar" class="ytbar" min="1" max="7" step="0.005" value="1" data-i18n-label="a_zoom">
+        <input type="range" id="zoomBar" class="ytbar owner-only" min="1" max="7" step="0.005" value="1" data-i18n-label="a_zoom">
       </div>
     </div>
   </div>
 
   <section id="below">
     <h2 id="camTitle2"></h2>
-    <div class="substatus"><span class="dot" id="dot"></span><span id="statusText"></span></div>
+    <div class="substatus"><span class="dot" id="dot"></span><span id="statusText"></span>
+      <span class="rec-pill" id="recPill" hidden><i></i>REC</span>
+      <span class="role-pill" id="rolePill"><svg class="i"><use href="#i-eye"/></svg><span data-i18n="view_only"></span></span></div>
     <div class="chips">
       <button class="chip" id="qcAudio"><svg class="i"><use href="#i-mute" id="qcAudioIcon"/></svg><span id="qcAudioText"></span></button>
-      <button class="chip" id="qcTorch"><svg class="i"><use href="#i-torch"/></svg><span data-i18n="chip_torch"></span></button>
-      <button class="chip" id="qcNight"><svg class="i"><use href="#i-moon"/></svg><span data-i18n="chip_night"></span></button>
-      <button class="chip" id="qcFront" hidden><svg class="i"><use href="#i-flip"/></svg><span data-i18n="chip_front"></span></button>
+      <button class="chip owner-only" id="qcTorch"><svg class="i"><use href="#i-torch"/></svg><span data-i18n="chip_torch"></span></button>
+      <button class="chip owner-only" id="qcNight"><svg class="i"><use href="#i-moon"/></svg><span data-i18n="chip_night"></span></button>
+      <button class="chip owner-only" id="qcFront" hidden><svg class="i"><use href="#i-flip"/></svg><span data-i18n="chip_front"></span></button>
       <button class="chip" id="qcRotate"><svg class="i"><use href="#i-rotate"/></svg><span data-i18n="chip_rotate"></span></button>
     </div>
   </section>
@@ -265,8 +284,9 @@
     <!-- Tabs: picture settings, timelapse, the camera phone itself. Below the video in portrait, a sheet in landscape -->
     <div class="sheet-head"><div class="grabber" id="grabber"></div>
       <nav class="tabs" id="tabs" role="tablist">
-        <button type="button" role="tab" data-tab="pic"><svg class="i"><use href="#i-sliders"/></svg><span data-i18n="tab_picture"></span></button>
+        <button type="button" role="tab" data-tab="pic" class="owner-only"><svg class="i"><use href="#i-sliders"/></svg><span data-i18n="tab_picture"></span></button>
         <button type="button" role="tab" data-tab="tl"><svg class="i"><use href="#i-timer"/></svg><span data-i18n="g_timelapse"></span><i class="tab-dot" id="tlTabDot" hidden></i></button>
+        <button type="button" role="tab" data-tab="rec"><svg class="i"><use href="#i-rec"/></svg><span data-i18n="tab_rec"></span><i class="tab-dot" id="recTabDot" hidden></i></button>
         <button type="button" role="tab" data-tab="dev"><svg class="i"><use href="#i-phone"/></svg><span data-i18n="tab_device"></span></button>
       </nav>
     </div>
@@ -283,9 +303,9 @@
             <div><b id="tlStVideo"></b><span data-i18n="tl_st_video"></span></div>
             <div><b id="tlStTime"></b><span data-i18n="tl_st_time"></span></div>
           </div>
-          <button type="button" class="tl-go" id="tlGo"><svg class="i"><use href="#i-play" id="tlGoIcon"/></svg><span id="tlGoText"></span></button>
+          <button type="button" class="tl-go owner-only" id="tlGo"><svg class="i"><use href="#i-play" id="tlGoIcon"/></svg><span id="tlGoText"></span></button>
         </div>
-        <div class="sgroup">
+        <div class="sgroup owner-only">
           <button type="button" class="srow link" id="tlSetRow"><span class="row-ic"><svg class="i"><use href="#i-sliders"/></svg></span>
             <div class="grow"><div class="t" data-i18n="tl_settings"></div><div class="s" id="tlSetSum"></div></div>
             <svg class="i chev"><use href="#i-chev"/></svg></button>
@@ -300,6 +320,39 @@
         <p class="sgroup-title" data-i18n="tl_videos"></p>
         <div class="sgroup" id="tlList"></div>
         <p class="note" data-i18n="tl_note"></p>
+      </div>
+    </div>
+
+    <!-- Continuous recording on the camera phone: state, settings (own sheet), recordings by day -->
+    <div class="pane" data-pane="rec">
+      <div id="recNone" class="tl-empty-card"><svg class="i"><use href="#i-rec"/></svg><span data-i18n="rec_unsupported"></span></div>
+      <div id="recBox" hidden>
+        <div class="sgroup tl-card">
+          <div class="tl-head"><span class="tl-ic" id="recIc"><svg class="i"><use href="#i-rec"/></svg></span>
+            <div class="grow"><div class="t" id="recState"></div><div class="s" id="recSub"></div></div></div>
+          <div class="tl-stats" id="recStats">
+            <div><b id="recStUsed"></b><span data-i18n="rec_st_used"></span></div>
+            <div><b id="recStRate"></b><span data-i18n="rec_st_rate"></span></div>
+            <div><b id="recStFits"></b><span data-i18n="rec_st_fits"></span></div>
+          </div>
+          <button type="button" class="tl-go owner-only" id="recGo"><svg class="i"><use href="#i-play" id="recGoIcon"/></svg><span id="recGoText"></span></button>
+        </div>
+        <div class="sgroup owner-only">
+          <button type="button" class="srow link" id="recSetRow"><span class="row-ic"><svg class="i"><use href="#i-sliders"/></svg></span>
+            <div class="grow"><div class="t" data-i18n="rec_settings"></div><div class="s" id="recSetSum"></div></div>
+            <svg class="i chev"><use href="#i-chev"/></svg></button>
+        </div>
+        <div id="recDenied" class="tl-empty-card" hidden><svg class="i"><use href="#i-eyeoff"/></svg><span data-i18n="rec_denied"></span></div>
+        <div id="recBrowse">
+          <p class="sgroup-title" data-i18n="rec_list"></p>
+          <div class="rec-days" id="recDays" role="tablist"></div>
+          <div class="sgroup rec-day">
+            <div class="rec-line" id="recLine"><div class="rec-track" id="recTrack"></div>
+              <div class="rec-hours"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>
+            <div id="recList"></div>
+          </div>
+        </div>
+        <p class="note" data-i18n="rec_note"></p>
       </div>
     </div>
 
@@ -355,7 +408,7 @@
       <p class="sgroup-title" data-i18n="g_device"></p>
       <div class="sgroup" id="statsHome"></div>
     <!-- Relay server for watching over 4G, typed here and sent to the camera phone (old phones are awkward to type on) -->
-    <div id="camTurnBox" hidden>
+    <div id="camTurnBox" class="owner-only" hidden>
       <p class="sgroup-title" data-i18n="g_cam_turn"></p>
       <div class="sgroup">
         <div class="srow"><div class="grow"><div class="t" data-i18n="cam_turn_now"></div><div class="s" id="camTurnStatus"></div></div></div>
@@ -371,7 +424,7 @@
     </div>
 
     <!-- Heat protection runs on the camera phone; these change its settings (cameras on older versions don't send them) -->
-    <div id="heatGroupBox" hidden>
+    <div id="heatGroupBox" class="owner-only" hidden>
       <p class="sgroup-title" data-i18n="g_heat"></p>
       <div class="sgroup">
         <label class="srow"><div class="grow"><div class="t" data-i18n="heat_guard"></div><div class="s" data-i18n="heat_guard_sub"></div></div>
@@ -391,8 +444,10 @@
       <div class="tl-est" id="tlEst"></div>
       <div class="srow col"><div class="t" data-i18n="tl_interval"></div>
         <div class="seg" id="selTlInt"><button data-v="2">2s</button><button data-v="5">5s</button><button data-v="10">10s</button><button data-v="30">30s</button><button data-v="60">1m</button><button data-v="300">5m</button></div></div>
-      <div class="srow col"><div class="t" data-i18n="tl_stop_after"></div>
-        <div class="seg" id="selTlDur"><button data-v="0" data-i18n="tl_never"></button><button data-v="60">1h</button><button data-v="180">3h</button><button data-v="480">8h</button><button data-v="1440">24h</button></div></div>
+      <!-- Quick picks, and a slider for any time in between (15-minute steps, up to 24 h) -->
+      <div class="srow col"><div class="head"><div class="t" data-i18n="tl_stop_after"></div><b class="v" id="tlDurVal"></b></div>
+        <div class="seg" id="selTlDur"><button data-v="0" data-i18n="tl_never"></button><button data-v="60">1h</button><button data-v="180">3h</button><button data-v="480">8h</button><button data-v="1440">24h</button></div>
+        <input type="range" class="srange" id="tlDur" min="0" max="1440" step="15" value="0" data-i18n-label="tl_stop_after"></div>
       <div class="srow col"><div class="t" data-i18n="tl_quality"></div>
         <div class="seg" id="selTlQ"><button data-v="720">HD</button><button data-v="1080">Full HD</button></div></div>
       <label class="srow"><div class="grow"><div class="t" data-i18n="tl_stamp"></div><div class="s" data-i18n="tl_stamp_sub"></div></div>
@@ -401,6 +456,50 @@
         <input type="checkbox" class="switch" id="tTlGallery"></label>
       <button type="button" class="pill" id="tlDlgDone" data-i18n="done"></button>
     </div>
+  </div>
+</div>
+
+<!-- Recording settings: applied on the camera right away -->
+<div id="recDlg" class="dlg sheet" hidden>
+  <div class="sheet-card tl-sheet" role="dialog" aria-modal="true" aria-labelledby="recDlgTitle">
+    <div class="sheet-title"><b id="recDlgTitle" data-i18n="rec_settings"></b></div>
+    <div class="tl-est" id="recEst"></div>
+    <div class="srow col"><div class="t" data-i18n="rec_quality"></div>
+      <div class="seg" id="selRecQ"><button data-v="720">HD 720p</button><button data-v="1080">Full HD</button></div></div>
+    <div class="srow col"><div class="t" data-i18n="rec_fps"></div>
+      <div class="seg" id="selRecFps"><button data-v="10">10</button><button data-v="15">15</button></div></div>
+    <div class="srow col"><div class="t" data-i18n="rec_keep"></div>
+      <div class="seg" id="selRecDays"><button data-v="3"></button><button data-v="7"></button><button data-v="14"></button><button data-v="30"></button><button data-v="0" data-i18n="rec_keep_full"></button></div>
+      <div class="s" data-i18n="rec_keep_sub"></div></div>
+    <div class="srow col" id="rowRecFormat"><div class="t" data-i18n="rec_format"></div>
+      <div class="seg" id="selRecFmt"><button data-v="hevc">HEVC</button><button data-v="h264">H.264</button></div>
+      <div class="s" id="recFmtHint"></div></div>
+    <label class="srow"><div class="grow"><div class="t" data-i18n="rec_view"></div><div class="s" data-i18n="rec_view_sub"></div></div>
+      <input type="checkbox" class="switch" id="tRecView"></label>
+    <button type="button" class="pill" id="recDlgDone" data-i18n="done"></button>
+  </div>
+</div>
+
+<!-- Cut a few minutes out of a recording: the camera copies them (no re-encoding) and sends only that part -->
+<div id="cutDlg" class="dlg sheet" hidden>
+  <div class="sheet-card tl-sheet" role="dialog" aria-modal="true" aria-labelledby="cutDlgTitle">
+    <div class="sheet-title"><b id="cutDlgTitle" data-i18n="cut_title"></b></div>
+    <div class="tl-est"><div class="tl-est-head" id="cutHead"></div><div class="cut-big" id="cutRange"></div><div class="s" id="cutInfo"></div></div>
+    <div class="srow col"><div class="head"><div class="t" data-i18n="cut_from"></div><b class="v" id="cutFromVal"></b></div>
+      <input type="range" class="srange" id="cutFrom" min="0" max="1800" step="5" value="0" data-i18n-label="cut_from"></div>
+    <div class="srow col"><div class="t" data-i18n="cut_len"></div>
+      <div class="seg" id="selCutLen"><button data-v="60">1m</button><button data-v="120">2m</button><button data-v="300">5m</button><button data-v="600">10m</button><button data-v="1800">30m</button></div></div>
+    <button type="button" class="pill" id="cutGo"><span data-i18n="cut_go"></span></button>
+  </div>
+</div>
+
+<!-- A downloaded recording, played here before saving -->
+<div id="playDlg" class="dlg" hidden>
+  <div class="play-card" role="dialog" aria-modal="true" aria-labelledby="playTitle">
+    <video id="playVideo" controls playsinline></video>
+    <div class="play-bar"><div class="grow"><div class="t" id="playTitle"></div><div class="s" id="playNote"></div></div>
+      <button type="button" class="pill" id="playSave"><svg class="i"><use href="#i-download"/></svg><span data-i18n="play_save"></span></button>
+      <button type="button" class="icon-btn" id="playClose" data-i18n-label="a_close"><svg class="i"><use href="#i-x"/></svg></button></div>
   </div>
 </div>
 
@@ -420,6 +519,7 @@
 <script src="js/share.js"></script>
 <script src="js/snapshot.js"></script>
 <script src="js/timelapse.js"></script>
+<script src="js/rec.js"></script>
 <script src="js/cams.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/main.js"></script>

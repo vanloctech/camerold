@@ -34,8 +34,10 @@ class Rows(private val a: Activity) {
     private fun dp(v: Int) = (v * a.resources.displayMetrics.density).toInt()
 
     /** Section label + an empty card to put rows in. */
-    fun section(parent: LinearLayout, @StringRes title: Int): LinearLayout {
-        parent.addView(TextView(a, null, 0, R.style.SectionTitle).apply { setText(title) },
+    fun section(parent: LinearLayout, @StringRes title: Int): LinearLayout = section(parent, a.getString(title))
+
+    fun section(parent: LinearLayout, title: CharSequence): LinearLayout {
+        parent.addView(TextView(a, null, 0, R.style.SectionTitle).apply { text = title },
             LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 topMargin = a.resources.getDimensionPixelSize(R.dimen.section_gap); bottomMargin = dp(10)
             })
@@ -56,13 +58,16 @@ class Rows(private val a: Activity) {
                 .apply { topMargin = dp(10) })
         }
 
-    fun row(card: LinearLayout, icon: Int, @StringRes title: Int, onClick: (() -> Unit)? = null): Row {
+    fun row(card: LinearLayout, icon: Int, @StringRes title: Int, onClick: (() -> Unit)? = null): Row =
+        row(card, icon, a.getString(title), onClick)
+
+    fun row(card: LinearLayout, icon: Int, title: CharSequence, onClick: (() -> Unit)? = null): Row {
         val line = if (card.childCount > 0) divider().also { card.addView(it) } else null
         val v = a.layoutInflater.inflate(R.layout.row_item, card, false)
         v.findViewById<ImageView>(R.id.icon).setImageResource(icon)
         val chevron = v.findViewById<View>(R.id.chevron)
         val r = Row(v, v.findViewById(R.id.title), v.findViewById(R.id.summary), v.findViewById(R.id.actions), line, chevron)
-        r.title.setText(title)
+        r.title.text = title
         // Tappable rows end with a chevron (switch rows and rows with their own buttons hide it again)
         if (onClick != null) { v.setOnClickListener { onClick() }; chevron.visibility = View.VISIBLE } else v.background = null
         card.addView(v)
@@ -118,7 +123,7 @@ class Rows(private val a: Activity) {
     fun choose(@StringRes title: Int, items: List<String>, selected: Int, pick: (Int) -> Unit) {
         AlertDialog.Builder(a)
             .setTitle(title)
-            .setSingleChoiceItems(items.toTypedArray(), selected) { d, i -> pick(i); d.dismiss() }
+            .setSingleChoiceItems(items.toTypedArray(), selected) { d, i -> d.dismiss(); pick(i) } // closed first: pick may rebuild the screen
             .setNegativeButton(R.string.cancel, null)
             .show()
     }

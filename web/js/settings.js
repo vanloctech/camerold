@@ -24,7 +24,8 @@ function fillLanguages() {
   let saved = '';
   try { saved = localStorage.getItem('camerold-lang') || ''; } catch {}
   const sel = $('selLang');
-  sel.innerHTML = '';
+  // The language names don't change; only "Auto" is in the current language
+  if (sel.options.length) { sel.options[0].text = t('lang_auto'); sel.value = saved in I18N ? saved : ''; return; }
   sel.add(new Option(t('lang_auto'), ''));
   Object.keys(I18N).map(tag => [tag, languageName(tag)])
     .sort((a, b) => a[1].localeCompare(b[1]))
@@ -54,6 +55,7 @@ function initSettings() {
     try { v ? localStorage.setItem('camerold-lang', v) : localStorage.removeItem('camerold-lang'); } catch {}
     LANG = pickLang();
     applyI18n();
+    renderCams(); showPasteKey(); // text set by code
     $('selLang').options[0].textContent = t('lang_auto');
     loadBrokerUi();
   };

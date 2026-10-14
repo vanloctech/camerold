@@ -108,6 +108,32 @@ async function readQrImage(file) {
 }
 function pickQrImage() { $('qrFile').value = ''; $('qrFile').click(); }
 
+// ---------- Paste: a QR picture (or a camerold:// link) copied from a chat, a screenshot tool… ----------
+const PASTE_KEY = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘V' : 'Ctrl+V';
+/** Text pasted: the camera's link works as well as its picture. */
+function useJoinText(text) {
+  const j = parseJoin(String(text || '').trim());
+  if (j) { $('loginMsg').textContent = ''; useJoin(j); }
+  return !!j;
+}
+async function pasteQr() {
+  let items;
+  try { items = await navigator.clipboard.read(); } catch { $('loginMsg').textContent = t('paste_denied', { k: PASTE_KEY }); return; }
+  for (const it of items) {
+    const type = it.types.find(x => x.startsWith('image/'));
+    if (type) { readQrImage(new File([await it.getType(type)], 'clipboard', { type })); return; }
+  }
+  for (const it of items) {
+    if (it.types.includes('text/plain') && useJoinText(await (await it.getType('text/plain')).text())) return;
+  }
+  $('loginMsg').textContent = t('paste_none');
+}
+// A button for it where the page may read the clipboard (desktop and mobile browsers); the app has its own scanner
+$('pasteQr').hidden = IN_APP || !navigator.clipboard?.read;
+$('pasteQr').onclick = pasteQr;
+const showPasteKey = () => setText($('pasteSub'), t('paste_sub', { k: PASTE_KEY }));
+showPasteKey();
+
 $('scanBtn').onclick = openScanner;
 $('scanClose').onclick = closeScanner;
 $('uploadQr').onclick = pickQrImage;
@@ -117,7 +143,9 @@ $('qrFile').onchange = () => readQrImage($('qrFile').files[0]);
 document.addEventListener('paste', e => {
   if ($('login').hidden) return;
   const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
-  if (item) { e.preventDefault(); readQrImage(item.getAsFile()); }
+  if (item) { e.preventDefault(); readQrImage(item.getAsFile()); return; }
+  // A link pasted outside the text fields
+  if (!e.target.closest?.('input, textarea') && useJoinText(e.clipboardData?.getData('text/plain'))) e.preventDefault();
 });
 document.addEventListener('dragover', e => { if (!$('login').hidden && e.dataTransfer?.types.includes('Files')) e.preventDefault(); });
 document.addEventListener('drop', e => {

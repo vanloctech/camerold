@@ -32,6 +32,7 @@ class MainActivity : BaseActivity() {
             R.string.home_camera_title, R.string.home_camera_sub) { startActivity(Intent(this, CameraActivity::class.java)) }
         role(R.id.roleViewer, R.drawable.bg_role_viewer, R.drawable.ill_viewer, R.drawable.ic_eye,
             R.string.home_viewer_title, R.string.home_viewer_sub) { startActivity(Intent(this, ViewerActivity::class.java)) }
+        layoutForWidth()
         findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
 
         val how = findViewById<LinearLayout>(R.id.howCard)
@@ -42,6 +43,18 @@ class MainActivity : BaseActivity() {
         App.showLastCrash(this)
         // If already streaming, go straight to the camera screen
         if (CameraService.running && savedInstanceState == null) startActivity(Intent(this, CameraActivity::class.java))
+    }
+
+    /** Tablets and unfolded foldables: the two cards side by side, everything in a centered column. */
+    private fun layoutForWidth() {
+        Wide.centerColumn(findViewById(R.id.homeHeader), 880)
+        Wide.centerColumn(findViewById(R.id.homeContent), 880)
+        if (resources.configuration.screenWidthDp < 720) return // narrower: too little room for the titles
+        findViewById<LinearLayout>(R.id.roles).orientation = LinearLayout.HORIZONTAL
+        for (id in listOf(R.id.roleCamera, R.id.roleViewer)) findViewById<View>(id).layoutParams =
+            LinearLayout.LayoutParams(0, (180 * resources.displayMetrics.density).toInt(), 1f).apply {
+                if (id == R.id.roleViewer) marginStart = (16 * resources.displayMetrics.density).toInt()
+            }
     }
 
     private fun role(id: Int, bg: Int, art: Int, icon: Int, title: Int, sub: Int, open: () -> Unit): View {

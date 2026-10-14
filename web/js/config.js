@@ -56,6 +56,8 @@ const DEFAULT_ICE = [
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 const enc = new TextEncoder(), dec = new TextDecoder();
 const $ = id => document.getElementById(id);
+/** Only touches the page when the text really changed (no relayout for the same value every second). */
+const setText = (el, s) => { if (el.textContent !== s) el.textContent = s; };
 
 function randomId(n) {
   const b = crypto.getRandomValues(new Uint8Array(n));

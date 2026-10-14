@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy policy · Camerold</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -37,8 +38,8 @@
       <li>The developer does <b>not</b> collect, store, sell or share any of your data. There is no account, no
         advertising and no analytics.</li>
       <li>Video and sound go <b>directly</b> from the camera phone to the devices watching it, end‑to‑end encrypted.</li>
-      <li>The app records nothing unless you start a timelapse. Its photos and videos stay on the camera phone until
-        you download or delete them.</li>
+      <li>The app records nothing unless you turn on continuous recording or start a timelapse. Recordings stay on the
+        camera phone until you download or delete them, or they are deleted by age or to free storage.</li>
     </ul>
 
     <h2>Camera and microphone</h2>
@@ -64,8 +65,9 @@
     <h2>Data stored on your devices</h2>
     <p>Settings (camera code, password, names of saved cameras, server details, preferences) are stored only on your
       devices, in the app's private storage or the browser's local storage. Snapshots you take are saved to your
-      gallery or downloads folder. Timelapse videos are kept in the camera app's private storage (and, if you choose,
-      the camera phone's gallery); viewers download them over the same encrypted connection as the video. Uninstalling the app or clearing site data removes the stored settings.
+      gallery or downloads folder. Continuous recordings and timelapse videos are kept in the camera app's private storage (and, if you choose,
+      the camera phone's gallery); viewers download them over the same encrypted connection as the video. If you turn on the app lock, only a salted
+      hash of your PIN is stored; fingerprint and face checks are done by Android, and the app never sees them. Uninstalling the app or clearing site data removes the stored settings.
       If the app crashes, a report is kept on the device and shown to you; it is shared only if you copy it yourself.</p>
 
     <h2>Children</h2>
@@ -87,8 +89,8 @@
       <li>Nhà phát triển <b>không</b> thu thập, lưu trữ, bán hay chia sẻ bất kỳ dữ liệu nào của bạn. Không có tài khoản,
         không quảng cáo, không thống kê sử dụng.</li>
       <li>Hình và tiếng đi <b>thẳng</b> từ máy camera tới các máy đang xem, được mã hoá đầu‑cuối.</li>
-      <li>Ứng dụng không ghi hình, trừ khi bạn bật timelapse. Ảnh và video timelapse nằm trên máy camera cho tới khi
-        bạn tải về hoặc xoá.</li>
+      <li>Ứng dụng không ghi hình, trừ khi bạn bật ghi hình liên tục hoặc timelapse. Bản ghi nằm trên máy camera cho tới
+        khi bạn tải về hoặc xoá, hoặc được tự xoá theo số ngày giữ lại hay khi bộ nhớ sắp đầy.</li>
     </ul>
 
     <h2>Camera và micro</h2>
@@ -113,8 +115,9 @@
     <h2>Dữ liệu lưu trên thiết bị của bạn</h2>
     <p>Cài đặt (mã camera, mật khẩu, tên các camera đã lưu, thông tin máy chủ, tuỳ chọn) chỉ lưu trên thiết bị của bạn,
       trong bộ nhớ riêng của ứng dụng hoặc bộ nhớ của trình duyệt. Ảnh bạn chụp được lưu vào thư viện ảnh hoặc thư mục tải
-      về. Video timelapse nằm trong bộ nhớ riêng của ứng dụng trên máy camera (và thư viện ảnh của máy đó nếu bạn chọn);
-      máy xem tải chúng về qua cùng kết nối mã hoá với video. Gỡ ứng dụng hoặc xoá dữ liệu trang web sẽ xoá các cài đặt này. Khi ứng dụng gặp lỗi, báo cáo lỗi được giữ trên
+      về. Bản ghi hình liên tục và video timelapse nằm trong bộ nhớ riêng của ứng dụng trên máy camera (và thư viện ảnh của máy đó nếu bạn chọn);
+      máy xem tải chúng về qua cùng kết nối mã hoá với video. Nếu bạn bật khoá ứng dụng, chỉ bản băm (có salt) của mã PIN
+      được lưu; việc kiểm tra vân tay hay khuôn mặt do Android thực hiện, ứng dụng không nhận được dữ liệu đó. Gỡ ứng dụng hoặc xoá dữ liệu trang web sẽ xoá các cài đặt này. Khi ứng dụng gặp lỗi, báo cáo lỗi được giữ trên
       máy và hiện cho bạn xem; chỉ được chia sẻ nếu bạn tự sao chép.</p>
 
     <h2>Trẻ em</h2>

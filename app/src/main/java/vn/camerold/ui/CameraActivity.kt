@@ -16,6 +16,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -107,10 +108,15 @@ class CameraActivity : BaseActivity() {
         }
         rowSettings = rows.row(findViewById(R.id.groupCam), R.drawable.ic_sliders, R.string.row_camera_settings) { openSettings() }
 
-        // 4:3 preview frame
-        findViewById<View>(R.id.previewBox).let { box ->
-            box.post { box.layoutParams = box.layoutParams.apply { height = box.width * 3 / 4 } }
+        // Upright: a 4:3 preview frame above the controls (kept 4:3 as the width changes)
+        findViewById<View>(R.id.previewBox).addOnLayoutChangeListener { box, l, _, r, _, _, _, _, _ ->
+            val lp = box.layoutParams
+            val h = if (box.parent === sidePane) ViewGroup.LayoutParams.MATCH_PARENT else (r - l) * 3 / 4
+            if (lp.height != h && r > l) box.post { box.layoutParams = lp.apply { height = h } }
         }
+        Wide.centerColumn(findViewById(R.id.camContent))
+        Wide.centerColumn(findViewById(R.id.actionBar))
+        layoutForWidth()
 
         btnStart.setOnClickListener { if (CameraService.running) stopStreaming() else startStreaming() }
         btnDim.setOnClickListener { setBlack(true) }
@@ -122,6 +128,38 @@ class CameraActivity : BaseActivity() {
         preview.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
         refreshUi()
         App.showLastCrash(this)
+    }
+
+    private val sidePane by lazy { findViewById<FrameLayout>(R.id.sidePane) }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        layoutForWidth()
+    }
+
+    /**
+     * Tablet held sideways, unfolded foldable: the preview fills the left side, the controls are a column on the right.
+     * Otherwise the preview sits on top of the controls, like on a phone.
+     */
+    private fun layoutForWidth() {
+        val two = Wide.isTwoPane(resources.configuration)
+        val box = findViewById<View>(R.id.previewBox)
+        val content = findViewById<LinearLayout>(R.id.camContent)
+        if (two == (box.parent === sidePane)) return
+        // Moved at once: with the list's change animation it would still count as the old parent's child
+        val anim = content.layoutTransition
+        content.layoutTransition = null
+        (box.parent as ViewGroup).removeView(box)
+        if (two) {
+            sidePane.addView(box, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        } else {
+            content.addView(box, 0, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, box.width * 3 / 4))
+        }
+        content.layoutTransition = anim
+        sidePane.visibility = if (two) View.VISIBLE else View.GONE
+        // Two panes: the controls get a fixed-width column, the preview the rest
+        findViewById<View>(R.id.mainCol).layoutParams = LinearLayout.LayoutParams(
+            if (two) (420 * resources.displayMetrics.density).toInt() else 0, ViewGroup.LayoutParams.MATCH_PARENT, if (two) 0f else 1f)
     }
 
     private fun openSettings() {
@@ -168,28 +206,116 @@ class CameraActivity : BaseActivity() {
         Prefs.save(this, draft)
     }
 
-    /** QR code with camera ID + password: the viewer scans it to connect. Auto-closes after 90 seconds. */
-    private fun showQr() {
+    /**
+     * QR code with camera ID + password: the viewer scans it to connect. Two links: full control (the owner's password)
+     * and view only (a second password; the camera refuses any change from it). Auto-closes after 90 seconds.
+     */
+    private fun showQr(viewOnly: Boolean = false) {
         val c = if (CameraService.running) Prefs.load(this) else draft.copy(password = password.text.toString())
-        if (c.password.length < 8) { toast(R.string.qr_need_password); return }
-        // Just the code on a white card: the row that opens it already says what it's for
-        val size = dp(264)
-        val img = ImageView(this).apply {
-            setImageBitmap(QrCode.bitmap(QrCode.joinUri(c), size))
+        if (!viewOnly && c.password.length < 8) { toast(R.string.qr_need_password); return }
+        val size = dp(248)
+        val ink = 0xFF161A23.toInt()
+        val accent = getColor(R.color.step_blue)
+        fun pill(color: Int) = android.graphics.drawable.GradientDrawable().apply { setColor(color); cornerRadius = dp(20).toFloat() }
+        lateinit var d: android.app.Dialog
+        // Which link: two halves of a segmented switch (on a white card in both themes, like the code itself)
+        val seg = LinearLayout(this).apply {
+            background = pill(0xFFF0F1F4.toInt())
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+            for ((label, view) in listOf(R.string.qr_full to false, R.string.qr_view to true)) {
+                addView(TextView(this@CameraActivity).apply {
+                    setText(label)
+                    gravity = android.view.Gravity.CENTER
+                    textSize = 14f
+                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                    setTextColor(if (view == viewOnly) 0xFFFFFFFF.toInt() else ink)
+                    if (view == viewOnly) background = pill(accent)
+                    setOnClickListener { if (view != viewOnly) { d.dismiss(); showQr(view) } }
+                }, LinearLayout.LayoutParams(0, dp(36), 1f))
+            }
         }
-        val card = FrameLayout(this).apply {
+        val img = ImageView(this).apply { setImageBitmap(QrCode.bitmap(QrCode.joinUri(c, viewOnly), size)) }
+        val note = TextView(this).apply {
+            setText(if (viewOnly) R.string.qr_view_sub else R.string.qr_full_sub)
+            textSize = 13f
+            setTextColor(0xFF6A707B.toInt())
+            gravity = android.view.Gravity.CENTER
+        }
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
             background = android.graphics.drawable.GradientDrawable().apply { setColor(0xFFFFFFFF.toInt()); cornerRadius = dp(32).toFloat() }
-            setPadding(dp(18), dp(18), dp(18), dp(18))
-            addView(img, FrameLayout.LayoutParams(size, size))
+            setPadding(dp(18), dp(18), dp(18), dp(16))
+            addView(seg, LinearLayout.LayoutParams(size, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(12) })
+            addView(img, LinearLayout.LayoutParams(size, size))
+            addView(note, LinearLayout.LayoutParams(size, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) })
+            // Save the picture, or send it (chat apps…) to the phone that will watch
+            addView(LinearLayout(this@CameraActivity).apply {
+                gravity = android.view.Gravity.CENTER
+                for ((icon, label, act) in listOf(Triple(R.drawable.ic_download, R.string.qr_save, false), Triple(R.drawable.ic_share, R.string.qr_share, true))) {
+                    addView(TextView(this@CameraActivity).apply {
+                        setText(label)
+                        textSize = 14f
+                        typeface = android.graphics.Typeface.DEFAULT_BOLD
+                        setTextColor(accent)
+                        gravity = android.view.Gravity.CENTER
+                        compoundDrawablePadding = dp(8)
+                        setCompoundDrawablesRelativeWithIntrinsicBounds(getDrawable(icon)!!.mutate().apply { setTint(accent); setBounds(0, 0, dp(18), dp(18)) }, null, null, null)
+                        setPadding(dp(14), dp(10), dp(14), dp(10))
+                        background = getDrawable(R.drawable.bg_round_ripple)
+                        setOnClickListener { qrOut(c, viewOnly, act) }
+                    })
+                }
+            }, LinearLayout.LayoutParams(size, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) })
+            // Revoke: everyone who scanned the old view-only code is out
+            if (viewOnly) addView(TextView(this@CameraActivity).apply {
+                setText(R.string.qr_view_reset)
+                textSize = 14f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                setTextColor(accent)
+                gravity = android.view.Gravity.CENTER
+                setPadding(dp(12), dp(10), dp(12), dp(4))
+                setOnClickListener { d.dismiss(); resetViewCode() }
+            })
         }
-        val d = android.app.Dialog(this).apply {
+        d = android.app.Dialog(this).apply {
             setContentView(card)
             window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
             setCanceledOnTouchOutside(true)
         }
-        card.setOnClickListener { d.dismiss() }
+        img.setOnClickListener { d.dismiss() }
         d.show()
         img.postDelayed({ if (d.isShowing) d.dismiss() }, 90_000) // don't leave the password on screen
+    }
+
+    /** The QR picture to the gallery ([share] = false) or to another app. */
+    private fun qrOut(c: vn.camerold.data.CamConfig, viewOnly: Boolean, share: Boolean) {
+        val name = c.name.ifEmpty { Build.MODEL }
+        val role = getString(if (viewOnly) R.string.qr_view else R.string.qr_full)
+        val png = QrCode.sharePng(QrCode.joinUri(c, viewOnly), name, role)
+        val file = "Camerold QR $name ($role).png"
+        if (share) { vn.camerold.ShareProvider.share(this, file, png, "image/png", getString(R.string.qr_share)); return }
+        if (Build.VERSION.SDK_INT < 29 && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), 7)
+            return
+        }
+        toast(if (vn.camerold.Gallery.saveImage(this, file, png, "image/png")) R.string.qr_saved else R.string.recs_save_fail)
+    }
+
+    /** New view-only password: whoever has the old code can't watch any more. Not while streaming (the camera listens on it). */
+    private fun resetViewCode() {
+        if (CameraService.running) { toast(R.string.qr_view_reset_stop); return }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.qr_view_reset)
+            .setMessage(R.string.qr_view_reset_msg)
+            .setPositiveButton(R.string.qr_view_reset_ok) { _, _ ->
+                draft = draft.copy(viewPassword = SigCrypto.randomPassword())
+                Prefs.save(this, Prefs.load(this).copy(viewPassword = draft.viewPassword))
+                toast(R.string.qr_view_reset_done)
+                showQr(viewOnly = true)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun showName() {

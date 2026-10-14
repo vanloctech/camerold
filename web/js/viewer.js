@@ -5,6 +5,7 @@ const S = {
   helloTimer: null, helloCount: 0, discTimer: null, statsTimer: null,
   iceServers: DEFAULT_ICE, codec: 'H264', lastBytes: 0, lastTs: 0, wakeLock: null,
   fs: false, audioAvail: false, muted: true, camName: 'Camera',
+  viewOnly: false, // came in with the camera's view-only code (the camera tells, see setRole)
 };
 const IN_APP = !!window.CameroldApp || new URLSearchParams(location.search).get('app') === '1';
 // ====================== Display state ======================
@@ -44,6 +45,25 @@ function applyHash() {
 window.addEventListener('hashchange', applyHash);
 /** Name of a saved camera (from the camera itself), shown while connecting next time. */
 function knownCamName(room) { return findCam(room)?.name || null; }
+
+/**
+ * The camera says which code this viewer used: "owner" (full control) or "view" (watch only). It refuses changes
+ * from the view-only code itself; here its controls are hidden. Owners get the view-only code too, to share it.
+ */
+function setRole(role, viewPass) {
+  const view = role === 'view';
+  S.viewOnly = view;
+  $('viewer').classList.toggle('viewonly', view);
+  if (view && S.tab === 'pic') selectTab('tl');
+  if (typeof renderRec === 'function') renderRec(); // view-only: recordings only if the owner allows it
+  const cam = S.room && findCam(S.room);
+  if (!cam) return;
+  const patch = {};
+  if (!!cam.view !== view) patch.view = view;
+  if (!view && typeof viewPass === 'string' && viewPass.length >= 8 && cam.viewPass !== viewPass) patch.viewPass = viewPass;
+  if (view && cam.viewPass) patch.viewPass = undefined;
+  if (Object.keys(patch).length) putCam({ room: cam.room, ...patch }, false);
+}
 function rememberCamName(name) {
   const cam = S.room && findCam(S.room);
   if (cam && (cam.name || null) !== name) putCam({ room: cam.room, name }, false);
@@ -117,6 +137,7 @@ async function start(cam) {
   $('login').hidden = true; $('viewer').hidden = false; $('viewer').scrollTop = 0;
   setCamName(knownCamName(room) || t('cam_default')); setStatus(t('connecting')); resetOverlay(); showLoading('net');
   setAudioUi(); updateMode(); showCtl(false); requestWakeLock(); appWatching(true);
+  $('bPip').hidden = !pipSupported(); fitCtl();
   S.helloTimer = setInterval(helloTick, 4000);
   detectNat().then(n => { S.nat = n; }).catch(() => {});
 }
@@ -125,17 +146,19 @@ function stopAll() {
   saveCamShot(); // the last picture, for the cameras list
   clearInterval(S.helloTimer); clearInterval(S.statsTimer); clearTimeout(S.discTimer);
   if (S.sig) { try { sendCam({ t: 'bye' }); } catch {} setTimeout((sig => () => sig.stop())(S.sig), 300); }
-  closePc(); S.sig = null; tlReset();
+  closePc(); S.sig = null; tlReset(); recReset();
   $('video').srcObject = null; resetOverlay(); $('heatPill').hidden = true; $('warnBadge').hidden = true;
   S.viewers = 0; $('viewersPill').hidden = true;
+  S.viewOnly = false; $('viewer').classList.remove('viewonly');
   S.health = null; S.heat = 0; S.warnRank = 0; clearTimeout(S.warnTimer);
-  setSheet(false); setFullscreen(false); appWatching(false);
+  setSheet(false); setFullscreen(false); exitPip(); appWatching(false);
   $('viewer').hidden = true; $('login').hidden = false;
   $('pass').value = ''; renderCams(); // names and "last watched" may have changed
   if (S.wakeLock) { S.wakeLock.release().catch(() => {}); S.wakeLock = null; }
 }
 
 function sendCam(msg) {
+  if (msg.t === 'cfg' && S.viewOnly) { toast(t('view_only_toast'), 2400); return Promise.resolve(); } // the camera would ignore it
   msg.v = S.viewerId; msg.s = S.session;
   return S.sig.send(`${S.topic}/c`, msg);
 }
@@ -171,7 +194,8 @@ function closePc() {
   if (S.pc) { S.pc.ontrack = S.pc.onicecandidate = S.pc.onconnectionstatechange = null; S.pc.close(); }
   S.pc = null; S.remoteSet = false; S.pendingIce = [];
   clearInterval(S.statsTimer);
-  if (typeof tlDropChannel === 'function') tlDropChannel(); // a new connection brings a new one
+  if (typeof tlDropChannel === 'function') tlDropChannel(); // a new connection brings new ones
+  if (typeof recDropChannel === 'function') recDropChannel();
 }
 
 async function onSignal(m) {
@@ -206,7 +230,8 @@ async function handleOffer(sdp) {
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
   };
   pc.onicecandidate = e => { if (e.candidate && e.candidate.candidate) sendCam({ t: 'ice', c: e.candidate.toJSON() }); };
-  pc.ondatachannel = e => { if (e.channel.label === 'tl') tlAttach(e.channel); }; // timelapse videos (timelapse.js)
+  // Timelapse videos (timelapse.js) and recordings (rec.js)
+  pc.ondatachannel = e => { if (e.channel.label === 'tl') tlAttach(e.channel); else if (e.channel.label === 'rec') recAttach(e.channel); };
   pc.onconnectionstatechange = () => {
     if (S.pc !== pc) return;
     const st = pc.connectionState;
@@ -252,6 +277,7 @@ function setCamName(name) {
 const shortLens = label => { const m = /(\d+(?:[.,]\d+)?)\s*x\b/i.exec(label); return m ? m[1].replace(',', '.') + '×' : label; };
 
 function updateInfo(m) {
+  if (m.role) setRole(m.role, m.viewPass);
   // The name set on the camera phone, else "Camera · <model>"; remembered per camera code for next time
   const name = typeof m.name === 'string' && m.name.trim() ? m.name.trim().slice(0, 40) : null;
   if (name) setCamName(name);
@@ -276,24 +302,30 @@ function updateInfo(m) {
     const onFront = !!front && m.lens === front.k;
     if (!onFront && m.lens) S.lensBack = m.lens;
     if (!back.some(l => l.k === S.lensBack)) S.lensBack = (back.find(l => shortLens(l.label) === '1×') || back[0])?.k || null;
-    const box = $('lenses'); box.innerHTML = '';
-    if (back.length > 1) for (const l of back) {
-      const b = document.createElement('button');
-      b.textContent = shortLens(l.label); b.title = l.label; b.className = l.k === m.lens ? 'on' : '';
-      b.onclick = () => { sendCam({ t: 'cfg', lens: l.k }); showCtl(); };
-      box.appendChild(b);
+    // Every setting change brings this again: the buttons are only rebuilt when the lenses themselves differ
+    const box = $('lenses'), shown = back.length > 1 ? back : [];
+    const key = shown.map(l => l.k + '=' + l.label).join('|');
+    if (box.dataset.key !== key) {
+      box.dataset.key = key;
+      box.replaceChildren(...shown.map(l => {
+        const b = document.createElement('button');
+        b.textContent = shortLens(l.label); b.title = l.label; b.dataset.k = l.k;
+        b.onclick = () => { sendCam({ t: 'cfg', lens: l.k }); showCtl(); };
+        return b;
+      }));
     }
-    $('qcFront').hidden = $('rowFront').hidden = !front;
-    $('qcFront').classList.toggle('on', onFront); setTog('tFront', onFront);
+    for (const b of box.children) b.classList.toggle('on', b.dataset.k === m.lens);
+    $('qcFront').hidden = $('rowFront').hidden = $('bFlip').hidden = !front;
+    $('qcFront').classList.toggle('on', onFront); $('bFlip').classList.toggle('on', onFront); setTog('tFront', onFront);
   }
   const c = m.caps;
   if (c) {
     const z = $('zoomBar'); z.min = c.zoomMin; z.max = Math.max(c.zoomMax, c.zoomMin + 0.1);
     z.disabled = c.zoomMax - c.zoomMin < 0.05;
-    $('rowTorch').hidden = !c.torch; $('qcTorch').hidden = !c.torch; $('rowStab').hidden = !c.stab;
+    $('rowTorch').hidden = !c.torch; $('qcTorch').hidden = $('bTorch').hidden = !c.torch; $('rowStab').hidden = !c.stab;
     const fm = { auto: true, point: c.focusPoint, lock: c.focusLock, manual: c.focusManual, inf: c.focusInf };
     for (const b of $('selFocus').querySelectorAll('button')) b.disabled = !fm[b.dataset.v];
-    S.canFocusPoint = !!c.focusPoint;
+    S.canFocusPoint = !!c.focusPoint && !S.viewOnly;
     $('focusHint').hidden = !c.focusPoint;
     const anyFocus = c.focusPoint || c.focusLock || c.focusManual || c.focusInf;
     $('focusTitle').hidden = $('focusGroup').hidden = !anyFocus;
@@ -303,7 +335,8 @@ function updateInfo(m) {
   }
   if (m.zoom != null && !barDragging) $('zoomBar').value = m.zoom;
   showZoomBar();
-  if (m.torch != null) { setTog('tTorch', m.torch); $('qcTorch').classList.toggle('on', !!m.torch); }
+  if (m.torch != null) { setTog('tTorch', m.torch); $('qcTorch').classList.toggle('on', !!m.torch); $('bTorch').classList.toggle('on', !!m.torch); }
+  if (m.lenses || c) fitCtl();
   if (m.night != null) { setTog('tNight', m.night); $('qcNight').classList.toggle('on', !!m.night); }
   if (m.stab != null) setTog('tStab', m.stab);
   if (m.ev != null) { $('ev').value = m.ev; showEv(); }
@@ -311,6 +344,7 @@ function updateInfo(m) {
   if (m.fdist != null && !fdistDragging) { $('fdist').value = m.fdist; showFdist(); }
   if (m.turn) showCamTurn(m.turn);
   if (m.tl) onTimelapseInfo(m.tl);
+  if (m.rec) onRecInfo(m.rec);
   if (m.viewers != null) showViewers(m.viewers);
   if (m.heatGuard != null) {
     $('heatGroupBox').hidden = false;
@@ -362,7 +396,7 @@ function flashWarning() {
 const fmtNum = (n, d = 0) => new Intl.NumberFormat(LANG, { maximumFractionDigits: d }).format(n);
 function fmtDuration(s) {
   const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
-  return d ? t('dur_dh', { d, h }) : h ? t('dur_hm', { h, m }) : t('dur_m', { m });
+  return d ? t('dur_dh', { d, h }) : h ? (m ? t('dur_hm', { h, m }) : t('n_hours', { n: h })) : t('dur_m', { m });
 }
 /** Rows for the info panel about the camera phone (battery, temperature, storage, running time). */
 function healthRows() {
@@ -378,6 +412,30 @@ function healthRows() {
 }
 
 /** Front camera on/off: back to the last back lens used (usually 1×). */
+/**
+ * The zoom level and buttons on the video bar, least important first: hidden one by one while the bar is too narrow (portrait phone).
+ * Full screen always stays; the others are also in the chips under the video and in settings.
+ */
+const CTL_DROP = ['zoomTxt', 'bTorch', 'bFlip', 'bRotate', 'bPip'];
+function fitCtl() {
+  const row = $('bFull').parentElement;
+  for (const id of CTL_DROP) $(id).classList.remove('squeezed');
+  if (!row.clientWidth) return;
+  const need = () => {
+    let w = 0;
+    for (const el of row.children) {
+      if (!el.offsetWidth || el.classList.contains('grow')) continue;
+      w += (el.id === 'lenses' || el.id === 'zoomTxt' ? el.scrollWidth : el.offsetWidth) + 2;
+    }
+    return w;
+  };
+  for (const id of CTL_DROP) {
+    if (need() <= row.clientWidth) break;
+    $(id).classList.add('squeezed');
+  }
+}
+new ResizeObserver(fitCtl).observe($('bFull').parentElement);
+
 function setFrontCamera(on) {
   const k = on ? S.lensFront : S.lensBack;
   if (k) sendCam({ t: 'cfg', lens: k });
@@ -463,11 +521,19 @@ function toggleUi() {
 $('ctl').addEventListener('pointerdown', e => { if (e.target.closest('button, input')) showCtl(); });
 
 // ====================== Portrait / landscape / fullscreen ======================
+// Three layouts: "stacked" (phone or tablet held upright: video on top, settings below), "split" (tablet held
+// sideways, computer: video on the left, settings in a column on the right) and "immersive" (phone sideways, full screen,
+// floating window: only the video, settings in a sheet over it).
+function viewMode() {
+  if (S.fs || S.pip) return 'immersive';
+  if (innerWidth >= 960 && innerHeight >= 500) return 'split';
+  return innerWidth > innerHeight ? 'immersive' : 'stacked';
+}
 function updateMode() {
-  const imm = S.fs || innerWidth > innerHeight || innerWidth >= 900;
+  const mode = viewMode(), imm = mode === 'immersive';
   const v = $('viewer');
-  if (v.classList.contains('immersive') !== imm) {
-    v.classList.toggle('immersive', imm); v.classList.toggle('stacked', !imm);
+  if (!v.classList.contains(mode)) {
+    for (const m of ['immersive', 'stacked', 'split']) v.classList.toggle(m, m === mode);
     setSheet(false);
   }
   // Connection info: overlaid on the video in landscape (info button), in the "Camera phone" tab in portrait
@@ -493,7 +559,77 @@ function appWatching(on) {
 window.onAppFullscreen = on => { S.fs = !!on; updateMode(); };
 document.addEventListener('fullscreenchange', () => { S.fs = !!document.fullscreenElement; updateMode(); });
 window.addEventListener('resize', updateMode);
-new ResizeObserver(() => layoutVideo()).observe($('stage'));
+// ====================== Picture in picture ======================
+// In the app: Android's own floating window shows the whole page (rotation included), also when going Home while
+// watching. In a browser: Chrome/Edge on a computer move the picture into a Document PiP window (rotation and
+// zoom kept); elsewhere the <video>'s own PiP (the browser can't rotate it).
+const DOC_PIP = 'documentPictureInPicture' in window;
+const pipSupported = () => {
+  if (IN_APP) { try { return !!window.CameroldApp?.canPip?.(); } catch { return false; } }
+  return DOC_PIP || !!document.pictureInPictureEnabled;
+};
+/** Width and height of the picture as shown (rotation applied), for the floating window's shape. */
+function pipShape() {
+  const v = $('video'), w = v.videoWidth || 16, h = v.videoHeight || 9;
+  return Z.rot % 180 ? [h, w] : [w, h];
+}
+let pipSent = '';
+/** Keeps the app's floating window the shape of the picture (also for entering it by going Home). */
+function appPipShape() {
+  if (!IN_APP || !window.CameroldApp?.setPipShape) return;
+  const [w, h] = pipShape(), k = w + 'x' + h;
+  if (k === pipSent) return;
+  pipSent = k;
+  try { CameroldApp.setPipShape(w, h); } catch {}
+}
+async function enterPip() {
+  const v = $('video');
+  if (IN_APP) { const [w, h] = pipShape(); try { CameroldApp.enterPip(w, h); } catch {} return; }
+  try {
+    if (DOC_PIP) {
+      if (documentPictureInPicture.window) return;
+      const [w, h] = pipShape(), k = Math.min(1, 480 / Math.max(w, h));
+      const win = await documentPictureInPicture.requestWindow({ width: Math.round(w * k), height: Math.round(h * k) });
+      const st = win.document.createElement('style');
+      st.textContent = 'html,body{margin:0;height:100%;background:#000;overflow:hidden}' +
+        '#stage{position:absolute;inset:0;overflow:hidden}#zoom{position:absolute;inset:0;transform-origin:0 0}' +
+        '#video{position:absolute;background:#000;transform-origin:50% 50%}';
+      win.document.head.append(st);
+      win.document.title = $('camTitle').textContent;
+      win.document.body.append(stage);
+      v.play().catch(() => {});
+      win.addEventListener('resize', layoutVideo);
+      win.addEventListener('pagehide', () => {
+        $('player').prepend(stage);
+        v.play().catch(() => {});
+        requestAnimationFrame(layoutVideo);
+      });
+      layoutVideo();
+    } else {
+      if (Z.rot) toast(t('pip_rot'));
+      await v.requestPictureInPicture();
+    }
+  } catch (e) { console.warn('pip', e); }
+}
+function exitPip() {
+  try { documentPictureInPicture?.window?.close(); } catch {}
+  if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
+}
+/** The app's floating window opened or closed: only the picture, no controls. */
+window.onAppPip = on => {
+  S.pip = !!on;
+  document.documentElement.classList.toggle('pip', S.pip);
+  if (S.pip) { setSheet(false); clearTimeout(S.ctlTimer); $('player').classList.add('hide-ctl'); }
+  else showCtl();
+  updateMode();
+};
+/** The floating window was swiped away: stop watching (the camera would keep sending to nobody). */
+window.onAppPipClosed = () => { if (!$('viewer').hidden) stopAll(); };
+$('video').addEventListener('resize', appPipShape);
+$('bPip').onclick = enterPip;
+
+// gestures.js (layoutVideo) loads after this file; the first callback can come before it
+new ResizeObserver(() => { if (typeof layoutVideo === 'function') layoutVideo(); }).observe($('stage'));
 
 // ====================== Camera settings ======================
 let fdistDragging = false, fdistTimer = null;
@@ -554,7 +690,7 @@ function setSheet(open) {
   $('panel').classList.toggle('open', open); $('scrim').classList.toggle('show', open);
   if (open) showCtl(false); else showCtl();
 }
-// ---------- Tabs: picture / timelapse / camera phone ----------
+// ---------- Tabs: picture / timelapse / recording / camera phone ----------
 function selectTab(name) {
   S.tab = name;
   for (const b of $('tabs').querySelectorAll('button')) { const on = b.dataset.tab === name; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); }
@@ -563,17 +699,19 @@ function selectTab(name) {
   const v = $('viewer');
   if (v.classList.contains('stacked')) { const top = $('panel').offsetTop - $('player').offsetHeight; if (v.scrollTop > top) v.scrollTop = top; }
   if (name === 'tl' && typeof tlRequestList === 'function') tlRequestList();
+  if (name === 'rec' && typeof recRefresh === 'function') recRefresh();
 }
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) selectTab(b.dataset.tab); });
 /** Shows a tab: the sheet over the video in landscape, scrolled into view below the video in portrait. */
 function openPanel(tab) {
   if (tab) selectTab(tab);
   if ($('viewer').classList.contains('immersive')) setSheet(true);
+  else if ($('viewer').classList.contains('split')) $('panel').scrollTo({ top: 0, behavior: 'smooth' });
   else { const v = $('viewer'); v.scrollTo({ top: $('panel').offsetTop - $('player').offsetHeight, behavior: 'smooth' }); }
 }
 function openSettings() {
   if ($('viewer').classList.contains('immersive') && $('panel').classList.contains('open')) setSheet(false);
-  else openPanel(S.tab === 'dev' || S.tab === 'tl' ? S.tab : 'pic');
+  else openPanel(['dev', 'tl', 'rec'].includes(S.tab) ? S.tab : 'pic');
 }
 selectTab('pic');
 $('scrim').onclick = () => setSheet(false);

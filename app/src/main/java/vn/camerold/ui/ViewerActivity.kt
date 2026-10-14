@@ -38,6 +38,7 @@ class ViewerActivity : BaseActivity() {
     // YouTube-style rotation: the watch screen stays upright; turning the phone sideways enters full screen,
     // turning it back upright leaves it. The full-screen button rotates the screen on its own.
     private var watching = false
+        set(v) { field = v; updatePip() }
     private var autoEnterArmed = true   // false after leaving full screen while still holding the phone sideways
     private var autoExitArmed = false   // true once the phone has really been held sideways in full screen
     private val isTablet get() = resources.configuration.smallestScreenWidthDp >= 600
@@ -74,6 +75,9 @@ class ViewerActivity : BaseActivity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.mediaPlaybackRequiresUserGesture = false
+        // Only the bundled page runs here (served by the asset loader): no file:// or content:// access
+        web.settings.allowFileAccess = false
+        web.settings.allowContentAccess = false
         web.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                 loader.shouldInterceptRequest(request.url)
@@ -97,7 +101,9 @@ class ViewerActivity : BaseActivity() {
             }
 
             override fun onPermissionRequest(request: PermissionRequest) = runOnUiThread {
-                if (!request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) { request.deny(); return@runOnUiThread }
+                // Only our own page, and only the camera (to scan QR codes)
+                if (request.origin?.host != "appassets.androidplatform.net" ||
+                    !request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) { request.deny(); return@runOnUiThread }
                 if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                     request.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE))
                 } else {
@@ -156,41 +162,34 @@ class ViewerActivity : BaseActivity() {
         fun setFullscreen(on: Boolean) = runOnUiThread { this@ViewerActivity.setFullscreen(on) }
 
         /**
-         * Saves a snapshot (JPEG, base64) to the phone's Pictures/Camerold so it shows in the gallery.
+         * Saves a snapshot (JPEG) or QR code (PNG), base64, to the phone's Pictures/Camerold so it shows in the gallery.
          * Returns "ok", "perm" (Android 9 and older: storage permission asked, try again) or "error".
          */
         @JavascriptInterface
         fun saveImage(base64: String, name: String): String = try {
-            val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
-            val file = name.replace(Regex("[\\\\/:*?\"<>|]"), " ").take(120)
-            if (Build.VERSION.SDK_INT >= 29) {
-                val v = android.content.ContentValues().apply {
-                    put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, file)
-                    put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                    put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Camerold")
-                    put(android.provider.MediaStore.Images.Media.IS_PENDING, 1)
-                }
-                val uri = contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v)!!
-                contentResolver.openOutputStream(uri)!!.use { it.write(bytes) }
-                contentResolver.update(uri, android.content.ContentValues().apply {
-                    put(android.provider.MediaStore.Images.Media.IS_PENDING, 0)
-                }, null, null)
-                "ok"
-            } else if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT < 29 && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 runOnUiThread { requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 4) }
                 "perm"
             } else {
-                @Suppress("DEPRECATION")
-                val dir = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "Camerold")
-                dir.mkdirs()
-                val f = java.io.File(dir, file)
-                f.writeBytes(bytes)
-                android.media.MediaScannerConnection.scanFile(this@ViewerActivity, arrayOf(f.path), arrayOf("image/jpeg"), null)
-                "ok"
+                val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+                val mime = if (name.endsWith(".png", true)) "image/png" else "image/jpeg"
+                if (vn.camerold.Gallery.saveImage(this@ViewerActivity, name, bytes, mime)) "ok" else "error"
             }
         } catch (e: Exception) {
             android.util.Log.e("ViewerActivity", "saveImage", e)
             "error"
+        }
+
+        /** Shares a picture (PNG or JPEG, base64), e.g. a camera's QR code: the system share sheet. */
+        @JavascriptInterface
+        fun shareImage(base64: String, name: String, title: String) = runOnUiThread {
+            try {
+                val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+                vn.camerold.ShareProvider.share(this@ViewerActivity, name, bytes,
+                    if (name.endsWith(".png", true)) "image/png" else "image/jpeg", title)
+            } catch (e: Exception) {
+                android.util.Log.e("ViewerActivity", "shareImage", e)
+            }
         }
 
         /**
@@ -225,6 +224,18 @@ class ViewerActivity : BaseActivity() {
         @JavascriptInterface
         fun setDarkBars(dark: Boolean) = runOnUiThread { applyBars(dark) }
 
+        /** The phone can show a floating window (picture in picture); some Android Go phones can't. */
+        @JavascriptInterface
+        fun canPip(): Boolean = pipAvailable
+
+        /** The picture's shape as shown (rotation applied): the floating window takes it. */
+        @JavascriptInterface
+        fun setPipShape(w: Int, h: Int) = runOnUiThread { pipW = w; pipH = h; updatePip() }
+
+        /** The page's picture-in-picture button. */
+        @JavascriptInterface
+        fun enterPip(w: Int, h: Int) = runOnUiThread { pipW = w; pipH = h; enterPip() }
+
         /** The page is showing a camera (not the sign-in form). */
         @JavascriptInterface
         fun setWatching(on: Boolean) = runOnUiThread { watching = on }
@@ -242,6 +253,47 @@ class ViewerActivity : BaseActivity() {
         /** The page's back arrow on the sign-in screen: back to the app's home screen. */
         @JavascriptInterface
         fun close() = runOnUiThread { finish() }
+    }
+
+    // Picture in picture: the watch screen shrinks to a floating window (the button, or going Home while watching).
+    // The page hides its controls in it (onAppPip); swiping the window away stops watching (onAppPipClosed).
+    private val pipAvailable by lazy { packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) }
+    private var pipW = 16
+    private var pipH = 9
+    /** Left the floating window: back to full size (onResume follows) or swiped away (onStop follows). */
+    private var leftPip = false
+    private var webPaused = false
+    private var active = false
+
+    private fun pipParams(): android.app.PictureInPictureParams {
+        // Android refuses shapes beyond 2.39:1 either way
+        val r = (pipW.toDouble() / pipH.coerceAtLeast(1)).coerceIn(1 / 2.39, 2.39)
+        val b = android.app.PictureInPictureParams.Builder()
+            .setAspectRatio(if (r >= 1) android.util.Rational((r * 1000).toInt(), 1000) else android.util.Rational(1000, (1000 / r).toInt()))
+        if (Build.VERSION.SDK_INT >= 31) b.setAutoEnterEnabled(watching).setSeamlessResizeEnabled(false)
+        return b.build()
+    }
+
+    private fun updatePip() {
+        if (!pipAvailable) return
+        try { setPictureInPictureParams(pipParams()) } catch (_: Exception) {}
+    }
+
+    private fun enterPip() {
+        if (!pipAvailable || !watching || isInPictureInPictureMode) return
+        try { enterPictureInPictureMode(pipParams()) } catch (e: Exception) { android.util.Log.w("ViewerActivity", "pip", e) }
+    }
+
+    // Android 8–11: going Home while watching opens the floating window (12+: setAutoEnterEnabled, smoother)
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (Build.VERSION.SDK_INT < 31) enterPip()
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (!isInPictureInPictureMode) leftPip = true
+        web.evaluateJavascript("window.onAppPip && onAppPip($isInPictureInPictureMode)", null)
     }
 
     private fun askNotifyOnce(json: String) {
@@ -319,7 +371,40 @@ class ViewerActivity : BaseActivity() {
         }
     }
 
-    override fun onResume() { super.onResume(); web.onResume(); if (!isTablet) orientation.enable() }
-    override fun onPause() { orientation.disable(); web.onPause(); super.onPause() }
+    // Folding or unfolding a foldable switches between phone (upright, turn sideways for full screen) and tablet
+    // (any way up) without rebuilding the screen
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (fullscreen || isInPictureInPictureMode) return
+        val want = if (isTablet) ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        if (requestedOrientation != want) requestedOrientation = want
+        if (isTablet) orientation.disable() else if (active) orientation.enable()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        active = true
+        leftPip = false
+        webPaused = false
+        web.onResume()
+        if (!isTablet) orientation.enable()
+    }
+
+    override fun onPause() {
+        active = false
+        orientation.disable()
+        // In the floating window the picture keeps playing
+        if (!isInPictureInPictureMode) { web.onPause(); webPaused = true }
+        super.onPause()
+    }
+
+    override fun onStop() {
+        if (leftPip) {
+            leftPip = false
+            web.evaluateJavascript("window.onAppPipClosed && onAppPipClosed()", null)
+        }
+        if (!webPaused) { web.onPause(); webPaused = true }
+        super.onStop()
+    }
     override fun onDestroy() { download?.finish(false); web.destroy(); super.onDestroy() }
 }

@@ -14,6 +14,7 @@ function layoutVideo() {
     transform: `rotate(${Z.rot}deg)`, objectFit: Z.fill ? 'cover' : 'contain',
   });
   applyZoom();
+  appPipShape(); // the app's floating window follows the rotation
 }
 function applyZoom() {
   const W = stage.clientWidth, H = stage.clientHeight;

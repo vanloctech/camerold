@@ -4,6 +4,7 @@
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -29,7 +30,8 @@
         android:theme="@style/AppTheme"
         android:enableOnBackInvokedCallback="true">
 
-        <activity android:name=".ui.MainActivity" android:exported="true">
+        <activity android:name=".ui.MainActivity" android:exported="true"
+            android:configChanges="uiMode|locale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -38,11 +40,22 @@
 
         <activity android:name=".ui.CameraActivity" android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
-        <activity android:name=".ui.CameraSettingsActivity" android:exported="false" />
-        <activity android:name=".ui.SettingsActivity" android:exported="false" />
+        <activity android:name=".ui.CameraSettingsActivity" android:exported="false"
+            android:configChanges="uiMode|locale|layoutDirection" />
+        <!-- Theme / language changes: rebuilt by BaseActivity with a fade instead of by the system -->
+        <activity android:name=".ui.SettingsActivity" android:exported="false"
+            android:configChanges="uiMode|locale|layoutDirection" />
+        <activity android:name=".ui.LockActivity" android:exported="false" android:launchMode="singleTop"
+            android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|smallestScreenSize" />
+        <activity android:name=".ui.RecordingsActivity" android:exported="false"
+            android:configChanges="uiMode|locale|layoutDirection" />
+        <activity android:name=".ui.PlayerActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen" />
 
         <activity android:name=".ui.ViewerActivity" android:exported="true" android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+            android:supportsPictureInPicture="true"
             android:theme="@style/ViewerTheme">
             <!-- Scanning the QR with the phone's regular camera: camerold://join?r=...&k=... opens the viewer screen directly -->
             <intent-filter>
@@ -52,6 +65,10 @@
                 <data android:scheme="camerold" android:host="join" />
             </intent-filter>
         </activity>
+
+        <!-- Files handed to the app picked in the share sheet (QR code pictures) -->
+        <provider android:name=".ShareProvider" android:authorities="${applicationId}.share"
+            android:exported="false" android:grantUriPermissions="true" />
 
         <service android:name=".camera.CameraService" android:exported="false"
             android:foregroundServiceType="camera|microphone" />

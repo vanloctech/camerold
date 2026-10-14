@@ -3,6 +3,7 @@ package vn.camerold.ui
 import android.app.Activity
 import android.app.UiModeManager
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import vn.camerold.R
@@ -50,23 +51,69 @@ object ThemePref {
 }
 
 /**
- * Every screen extends this: applies the user's theme and language, and rebuilds itself when they were changed
- * on another screen (Android versions where the system doesn't do it for us).
+ * Every screen extends this: applies the user's theme and language, and rebuilds itself when they change.
+ *
+ * Screens that declare configChanges="uiMode|locale|layoutDirection" (the plain ones: home, settings) get the change
+ * here instead of being torn down by the system, and rebuild once with a quick fade ([restyle]) rather than a blink.
+ * Screens behind it rebuild out of sight. The camera and viewer screens keep the system's own handling.
  */
 open class BaseActivity : Activity() {
     private var look = ""
-    private fun currentLook() = ThemePref.get(this) + "|" + LangPref.get(this)
+    private var resumed = false
+
+    /** What the screen was drawn with: the light/dark mode and the language actually in use. */
+    private fun lookOf(c: Configuration): String {
+        val theme = ThemePref.get(this)
+        val lang = LangPref.get(this)
+        // Android 12+ / 13+ apply the choice to the configuration; older versions only through attachBaseContext
+        val night = if (Build.VERSION.SDK_INT >= 31 || theme == ThemePref.SYSTEM) "n" + (c.uiMode and Configuration.UI_MODE_NIGHT_MASK) else theme
+        val locale = if (Build.VERSION.SDK_INT >= 33 || lang == LangPref.SYSTEM) c.locales.toLanguageTags() else lang
+        return "$night|$locale"
+    }
 
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(ThemePref.wrap(LangPref.wrap(newBase)))
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
-        look = currentLook()
+        look = lookOf(resources.configuration)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (isFinishing || lookOf(newConfig) == look) return // e.g. the screen was rotated
+        if (resumed) restyle() else recreate()
     }
 
     override fun onResume() {
         super.onResume()
-        if (currentLook() != look) recreate()
+        resumed = true
+        // Changed while this screen was in the background (older Android: nothing tells us)
+        if (lookOf(resources.configuration) != look) recreate()
+    }
+
+    override fun onPause() {
+        resumed = false
+        super.onPause()
+    }
+
+    /** Rebuilds this screen in the new theme or language: the new one fades in over the old one. */
+    protected fun restyle() {
+        if (isFinishing) return
+        look = lookOf(resources.configuration)
+        // Same screen and extras, in this task. Without clearing the flags, the launcher's NEW_TASK would only bring
+        // the task forward, and finish() would then close the app.
+        startActivity(Intent(intent).setFlags(0))
+        @Suppress("DEPRECATION") overridePendingTransition(R.anim.restyle_in, R.anim.restyle_hold)
+        finish()
+        @Suppress("DEPRECATION") overridePendingTransition(R.anim.restyle_in, R.anim.restyle_hold)
+    }
+
+    /**
+     * After the user picked a theme or language. Where the system applies it, [onConfigurationChanged] follows;
+     * older Android doesn't announce it, so the screen is rebuilt right away.
+     */
+    protected fun lookChanged() {
+        if (lookOf(resources.configuration) != look) restyle()
     }
 
     /**
@@ -78,6 +125,8 @@ open class BaseActivity : Activity() {
      */
     override fun onPostCreate(savedInstanceState: android.os.Bundle?) {
         super.onPostCreate(savedInstanceState)
+        // Settings lists (layout/activity_list): a readable column on tablets
+        findViewById<android.view.View>(R.id.content)?.let { Wide.centerColumn(it) }
         if (android.os.Build.VERSION.SDK_INT < 35) return
         val root = findViewById<android.view.View>(android.R.id.content)
         root.setOnApplyWindowInsetsListener { v, insets ->

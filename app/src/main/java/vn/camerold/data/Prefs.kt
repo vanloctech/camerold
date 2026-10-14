@@ -34,6 +34,16 @@ data class CamConfig(
     val name: String = "",  // shown to viewers, e.g. "Living room"; "" = phone model
     val heatGuard: Boolean = true, // lower quality when the phone gets hot (see camera/ThermalGuard.kt)
     val heatStart: Int = 44,       // battery °C where that starts (then +3 / +6 °C for the next steps)
+    // Second link for people who may only watch (no settings, no timelapse control); random, made on first use
+    val viewPassword: String = "",
+    // Continuous recording on this phone (camera/Recorder.kt)
+    val recOn: Boolean = false,
+    val recQ: Int = 720,          // 720 / 1080
+    val recFps: Int = 15,         // 10 / 15
+    val recDays: Int = 7,         // days kept, 0 = until storage runs short
+    val recH264: Boolean = false, // H.264 instead of HEVC (for players without HEVC)
+    val recViewOnly: Boolean = false, // view-only viewers may watch recordings
+    val recRot: Int = 0,          // picture turn, as the viewer who set it up shows it
 )
 
 object Prefs {
@@ -46,9 +56,15 @@ object Prefs {
             room = SigCrypto.randomId(10)
             p.edit().putString("room", room).apply()
         }
+        var viewPassword = p.getString("viewPassword", "") ?: ""
+        if (viewPassword.isEmpty()) {
+            viewPassword = SigCrypto.randomPassword()
+            p.edit().putString("viewPassword", viewPassword).apply()
+        }
         return CamConfig(
             room = room,
             password = p.getString("password", "") ?: "",
+            viewPassword = viewPassword,
             res = p.getInt("res", 1080),
             fps = p.getInt("fps", 30),
             lens = p.getString("lens", "") ?: "",
@@ -76,6 +92,13 @@ object Prefs {
             name = p.getString("name", "") ?: "",
             heatGuard = p.getBoolean("heatGuard", true),
             heatStart = p.getInt("heatStart", 44),
+            recOn = p.getBoolean("recOn", false),
+            recQ = p.getInt("recQ", 720),
+            recFps = p.getInt("recFps", 15),
+            recDays = p.getInt("recDays", 7),
+            recH264 = p.getBoolean("recH264", false),
+            recViewOnly = p.getBoolean("recViewOnly", false),
+            recRot = p.getInt("recRot", 0),
         )
     }
 
@@ -83,6 +106,7 @@ object Prefs {
         sp(ctx).edit()
             .putString("room", c.room)
             .putString("password", c.password)
+            .putString("viewPassword", c.viewPassword)
             .putInt("res", c.res)
             .putInt("fps", c.fps)
             .putString("lens", c.lens)
@@ -110,6 +134,13 @@ object Prefs {
             .putString("name", c.name)
             .putBoolean("heatGuard", c.heatGuard)
             .putInt("heatStart", c.heatStart)
+            .putBoolean("recOn", c.recOn)
+            .putInt("recQ", c.recQ)
+            .putInt("recFps", c.recFps)
+            .putInt("recDays", c.recDays)
+            .putBoolean("recH264", c.recH264)
+            .putBoolean("recViewOnly", c.recViewOnly)
+            .putInt("recRot", c.recRot)
             .apply()
     }
 }

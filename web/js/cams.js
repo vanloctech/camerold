@@ -76,40 +76,69 @@ function renderCams() {
   const cams = loadCams(), has = cams.length > 0;
   $('camListBox').hidden = !has;
   $('loginTitle').textContent = t(has ? 'my_cameras' : 'watch_title');
-  $('loginSub').hidden = has;
+  $('loginSub').textContent = !has ? t('hero_sub') : cams.length === 1 && LANG === 'en' ? t('cam_count1') : t('cam_count', { n: cams.length });
   // With saved cameras, typing a code is the exception: keep the form folded away
   const showForm = !has || CAMUI.manual;
   $('manualBox').hidden = !showForm; $('goBar').hidden = !showForm; $('manualToggle').hidden = showForm;
-  const box = $('camList'); box.replaceChildren();
+  const box = $('camList');
   box.classList.toggle('many', cams.length >= 3);
+  // Cards are kept per camera: removing, renaming or coming back from watching updates them, it doesn't
+  // rebuild the list (so the pictures don't reload)
+  const old = new Map([...box.children].map(c => [c.dataset.room, c]));
   const shots = camShots();
-  for (const cam of cams) {
-    // A card per camera with its last picture; the ⋮ button sits in its corner (a separate button, not nested)
-    const card = document.createElement('div');
-    card.className = 'cam-card'; card.setAttribute('role', 'button'); card.tabIndex = 0;
-    const shot = shots[cam.room]?.img;
-    card.innerHTML = (shot ? '<img alt="">' : '<span class="ph"><svg class="i"><use href="#i-camera"/></svg></span>') +
-      '<div class="info"><div class="t"></div><div class="s"></div></div>';
-    if (shot) card.querySelector('img').src = shot;
+  cams.forEach((cam, i) => {
+    let card = old.get(cam.room);
+    old.delete(cam.room);
+    if (!card) card = camCard(cam.room);
+    card.cam = cam; // what a tap opens
+    camCardPicture(card, shots[cam.room]?.img);
     const name = cam.name || t('cam_default');
-    card.querySelector('.t').textContent = name;
+    setText(card.querySelector('.t'), name);
     const when = cam.last ? relTime(cam.last) : '';
-    card.querySelector('.s').textContent = when === null ? t('cam_just') : when ? t('cam_last', { when }) : cam.room;
+    const sub = when === null ? t('cam_just') : when ? t('cam_last', { when }) : cam.room;
+    setText(card.querySelector('.s'), cam.view ? sub + ' · ' + t('view_only') : sub);
     card.setAttribute('aria-label', name);
-    card.onclick = () => start(cam);
-    card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(cam); } };
-    const more = document.createElement('button'); more.type = 'button'; more.className = 'icon-btn cam-more';
-    more.setAttribute('aria-label', t('a_more')); more.title = t('a_more');
-    more.innerHTML = '<svg class="i"><use href="#i-more"/></svg>';
-    more.onclick = e => { e.stopPropagation(); openCamMenu(cam); };
-    card.appendChild(more);
-    box.appendChild(card);
+    const more = card.lastChild; more.title = t('a_more'); more.setAttribute('aria-label', more.title); // language may have changed
+    if (box.children[i] !== card) box.insertBefore(card, box.children[i] || null);
+  });
+  old.forEach(c => c.remove());
+}
+/** A card per camera with its last picture; the ⋮ button sits in its corner (a separate button, not nested). */
+function camCard(room) {
+  const card = document.createElement('div');
+  card.className = 'cam-card'; card.setAttribute('role', 'button'); card.tabIndex = 0; card.dataset.room = room;
+  card.innerHTML = '<span class="ph"><svg class="i"><use href="#i-camera"/></svg></span><div class="info"><div class="t"></div><div class="s"></div></div>' +
+    '<span class="play" aria-hidden="true"><svg class="i"><use href="#i-play"/></svg></span>';
+  // Each camera keeps its own colour until it has a picture
+  let h = 0; for (const ch of room) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  card.style.setProperty('--hue', h);
+  card.onclick = () => start(card.cam);
+  card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(card.cam); } };
+  const more = document.createElement('button'); more.type = 'button'; more.className = 'icon-btn cam-more';
+  more.innerHTML = '<svg class="i"><use href="#i-more"/></svg>';
+  more.onclick = e => { e.stopPropagation(); openCamMenu(card.cam); };
+  card.appendChild(more);
+  return card;
+}
+/** The last picture, or the camera icon until there is one; the image is only replaced when the picture changed. */
+function camCardPicture(card, shot) {
+  const cur = card.firstChild;
+  if (shot) {
+    if (cur.tagName === 'IMG') { if (cur.getAttribute('src') !== shot) cur.src = shot; return; }
+    const img = document.createElement('img'); img.alt = ''; img.src = shot; cur.replaceWith(img);
+  } else if (cur.tagName === 'IMG') {
+    const ph = document.createElement('span'); ph.className = 'ph'; ph.innerHTML = '<svg class="i"><use href="#i-camera"/></svg>';
+    cur.replaceWith(ph);
   }
 }
 function openCamMenu(cam) {
   CAMUI.menuCam = cam;
   $('camMenuTitle').textContent = cam.name || t('cam_default');
   $('camMenuSub').textContent = cam.room;
+  // Full-control cameras: their own code (full control) and, once the camera sent it, the view-only one
+  const canShareView = !cam.view && typeof cam.viewPass === 'string' && cam.viewPass.length >= 8;
+  $('camMenuShareView').hidden = !canShareView;
+  $('camMenuShareText').textContent = t(canShareView ? 'share_full' : 'share_t');
   $('camMenu').hidden = false;
 }
 function closeCamMenu() { $('camMenu').hidden = true; CAMUI.menuCam = null; }
@@ -129,7 +158,8 @@ function initCams() {
   migrateCams();
   syncAppCams();
   $('manualToggle').onclick = () => { CAMUI.manual = true; renderCams(); $('room').focus(); };
-  $('camMenuShare').onclick = () => { const c = CAMUI.menuCam; closeCamMenu(); if (c) openShareQr(c); };
+  $('camMenuShare').onclick = () => { const c = CAMUI.menuCam; closeCamMenu(); if (c) openShareQr(c, !!c.view); };
+  $('camMenuShareView').onclick = () => { const c = CAMUI.menuCam; closeCamMenu(); if (c?.viewPass) openShareQr({ ...c, pass: c.viewPass }, true); };
   $('camMenuDelete').onclick = () => { const c = CAMUI.menuCam; closeCamMenu(); if (c) deleteCam(c); };
   $('camMenu').addEventListener('click', e => { if (e.target === $('camMenu') || e.target.id === 'camMenuCancel') closeCamMenu(); });
   $('snackUndo').onclick = undoDelete;

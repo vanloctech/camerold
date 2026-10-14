@@ -23,6 +23,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         ThemePref.apply(this)
+        vn.camerold.ui.AppLock.install(this)
         val prev = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             try {

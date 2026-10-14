@@ -17,7 +17,7 @@ const TL_DEFAULTS = { interval: 10, minutes: 0, q: 1080, stamp: true, gallery: f
 function tlPrefs() { return { ...TL_DEFAULTS, ...(savedSettings().tl || {}) }; }
 function tlSavePrefs(p) { savePatch({ tl: { ...tlPrefs(), ...p } }); }
 
-const fmtSize = b => b >= 1e9 ? fmtNum(b / 1e9, 1) + ' GB' : b >= 1e6 ? fmtNum(b / 1e6, 1) + ' MB' : fmtNum(Math.max(1, b / 1e3)) + ' KB';
+const fmtSize = b => b >= 1e9 ? fmtNum(b / 1e9, 1) + ' GB' : b >= 1e6 ? fmtNum(b / 1e6, b >= 1e8 ? 0 : 1) + ' MB' : fmtNum(Math.max(1, b / 1e3)) + ' KB';
 /** Short video length: "12 s", "1 min 5 s". */
 function fmtSecs(s) {
   s = Math.round(s);
@@ -111,7 +111,7 @@ function renderTl() {
   $('tlGoText').textContent = t(on ? 'tl_stop' : 'tl_start');
   // Settings summary: "Every 10 s · Full HD · stops after 3 h · date and time"
   $('tlSetSum').textContent = [t('tl_sum_every', { i: fmtInterval(c.interval) }), c.q >= 1080 ? 'Full HD' : 'HD',
-    c.minutes ? t('tl_sum_stop', { d: fmtHours(c.minutes / 60) }) : t('tl_sum_nostop'), c.stamp ? t('tl_sum_stamp') : null]
+    c.minutes ? t('tl_sum_stop', { d: fmtDuration(c.minutes * 60) }) : t('tl_sum_nostop'), c.stamp ? t('tl_sum_stamp') : null]
     .filter(Boolean).join(' · ');
   $('tlSetRow').classList.toggle('locked', on);
   renderTlStorage();
@@ -138,28 +138,37 @@ function renderTlStorage() {
 /** Top of the settings sheet: photos, video length and size, storage needed. */
 function renderTlEstimate() {
   const e = tlEstimate(tlPrefs()), box = $('tlEst');
-  box.replaceChildren();
-  const head = document.createElement('div'); head.className = 'tl-est-head';
-  head.textContent = e.perHour ? t('tl_est_hour') : t('tl_est_for', { d: fmtHours(e.hours) });
-  box.appendChild(head);
-  const grid = document.createElement('div'); grid.className = 'tl-stats';
-  for (const [v, k] of [[fmtNum(e.photos), 'tl_st_photos'], [fmtSecs(e.secs), 'tl_st_video'], ['~' + fmtSize(e.video), 'tl_st_size']]) {
-    const d = document.createElement('div'), b = document.createElement('b'), s = document.createElement('span');
-    b.textContent = v; s.textContent = t(k); d.append(b, s); grid.appendChild(d);
+  // Built once; afterwards only the texts change (it follows the slider while it's dragged)
+  if (!box.firstChild) {
+    const head = document.createElement('div'); head.className = 'tl-est-head';
+    const grid = document.createElement('div'); grid.className = 'tl-stats';
+    for (let i = 0; i < 3; i++) { const d = document.createElement('div'); d.append(document.createElement('b'), document.createElement('span')); grid.appendChild(d); }
+    const note = document.createElement('div'); note.className = 's';
+    box.append(head, grid, note);
   }
-  box.appendChild(grid);
-  const note = document.createElement('div'); note.className = 's';
+  const [head, grid, note] = box.children;
+  setText(head, e.perHour ? t('tl_est_hour') : t('tl_est_for', { d: fmtDuration(e.hours * 3600) }));
+  [[fmtNum(e.photos), 'tl_st_photos'], [fmtSecs(e.secs), 'tl_st_video'], ['~' + fmtSize(e.video), 'tl_st_size']].forEach(([v, k], i) => {
+    const [b, s] = grid.children[i].children;
+    setText(b, v); setText(s, t(k));
+  });
+  const short = e.fitsHours != null && !e.perHour && e.fitsHours < e.hours;
   const parts = [t('tl_est_need', { s: fmtSize(e.need) })];
   if (e.fitsHours != null) parts.push(t('tl_fits', { d: fmtHours(e.fitsHours) }));
-  note.textContent = parts.join(' · ');
-  if (e.fitsHours != null && !e.perHour && e.fitsHours < e.hours) { note.classList.add('warn'); note.textContent = t('tl_not_enough', { s: fmtSize(e.need) }); }
-  box.appendChild(note);
+  setText(note, short ? t('tl_not_enough', { s: fmtSize(e.need) }) : parts.join(' · '));
+  note.classList.toggle('warn', short);
 }
 
+/** Auto-stop time: the quick picks light up when the slider is on one of them. */
+function showTlDur(min) {
+  setSeg('selTlDur', min);
+  const r = $('tlDur'); r.value = min; fillRange(r);
+  $('tlDurVal').textContent = min ? fmtDuration(min * 60) : t('tl_never');
+}
 function openTlSettings() {
   if (TL.info?.on) { toast(t('tl_locked'), 2400); return; }
   const p = tlPrefs();
-  setSeg('selTlInt', p.interval); setSeg('selTlQ', p.q); setSeg('selTlDur', p.minutes);
+  setSeg('selTlInt', p.interval); setSeg('selTlQ', p.q); showTlDur(p.minutes);
   setTog('tTlStamp', p.stamp); setTog('tTlGallery', p.gallery);
   renderTlEstimate();
   $('tlDlg').hidden = false;
@@ -196,35 +205,53 @@ function tlOnMessage(text) {
   else if (m.op === 'err' && TL.dl?.id === m.id) tlDownloadDone(false);
 }
 
+/**
+ * The list comes again each time the tab opens or a video is added or deleted: rows are kept per video (with their
+ * thumbnails), so only new videos are added and deleted ones removed.
+ */
 function renderTlList() {
-  const box = $('tlList'); box.replaceChildren();
+  const box = $('tlList');
   if (!TL.items.length) {
-    const p = document.createElement('div'); p.className = 'tl-empty';
-    p.textContent = TL.ch ? t('tl_none') : t('tl_list_wait');
-    box.appendChild(p);
+    let p = box.firstChild;
+    if (!p || box.children.length > 1 || !p.classList.contains('tl-empty')) {
+      p = document.createElement('div'); p.className = 'tl-empty'; box.replaceChildren(p);
+    }
+    setText(p, TL.ch ? t('tl_none') : t('tl_list_wait'));
     return;
   }
-  for (const v of TL.items) {
-    const row = document.createElement('div'); row.className = 'tl-item'; row.dataset.id = v.id;
-    row.innerHTML = '<span class="tl-thumb"><svg class="i"><use href="#i-film"/></svg></span>' +
-      '<div class="grow"><div class="t"></div><div class="s"></div><div class="bar" hidden><i></i></div></div>' +
-      '<button type="button" class="icon-btn dl"><svg class="i"><use href="#i-download"/></svg></button>' +
-      '<button type="button" class="icon-btn del"><svg class="i"><use href="#i-trash"/></svg></button>';
-    row.querySelector('.t').textContent = fmtWhen(v.created);
-    row.querySelector('.s').textContent = [fmtSecs(v.dur), fmtSize(v.size), t('tl_photos', { n: fmtNum(v.frames) })].join(' · ');
-    const dl = row.querySelector('.dl'), del = row.querySelector('.del');
-    dl.setAttribute('aria-label', t('tl_download')); del.setAttribute('aria-label', t('tl_delete'));
-    dl.onclick = () => TL.dl?.id === v.id ? tlCancel() : tlDownload(v);
-    del.onclick = () => tlDelete(v, del);
-    box.appendChild(row);
-    tlShowThumb(v.id);
-  }
-  if (TL.dl) tlShowProgress();
+  const old = new Map([...box.querySelectorAll('.tl-item')].map(r => [r.dataset.id, r]));
+  box.querySelector('.tl-empty')?.remove();
+  TL.items.forEach((v, i) => {
+    let row = old.get(v.id);
+    old.delete(v.id);
+    if (!row) row = tlRow(v.id);
+    row.video = v; // what its buttons act on
+    row.querySelector('.dl').setAttribute('aria-label', t('tl_download')); row.querySelector('.del').setAttribute('aria-label', t('tl_delete'));
+    setText(row.querySelector('.t'), fmtWhen(v.created));
+    if (TL.dl?.id !== v.id) setText(row.querySelector('.s'), [fmtSecs(v.dur), fmtSize(v.size), t('tl_photos', { n: fmtNum(v.frames) })].join(' · '));
+    if (box.children[i] !== row) box.insertBefore(row, box.children[i] || null);
+  });
+  old.forEach(r => r.remove());
+  tlShowProgress();
+}
+function tlRow(id) {
+  const row = document.createElement('div'); row.className = 'tl-item'; row.dataset.id = id;
+  row.innerHTML = '<span class="tl-thumb"><svg class="i"><use href="#i-film"/></svg></span>' +
+    '<div class="grow"><div class="t"></div><div class="s"></div><div class="bar" hidden><i></i></div></div>' +
+    '<button type="button" class="icon-btn dl"><svg class="i"><use href="#i-download"/></svg></button>' +
+    '<button type="button" class="icon-btn del"><svg class="i"><use href="#i-trash"/></svg></button>';
+  const dl = row.querySelector('.dl'), del = row.querySelector('.del');
+  dl.onclick = () => TL.dl?.id === row.video.id ? tlCancel() : tlDownload(row.video);
+  del.onclick = () => tlDelete(row.video, del);
+  // Thumbnails arrive after the list; one already here is shown at once
+  const thumb = TL.thumbs[id];
+  if (thumb) { const img = document.createElement('img'); img.className = 'tl-thumb'; img.alt = ''; img.src = thumb; row.firstChild.replaceWith(img); }
+  return row;
 }
 /** Thumbnails come after the list: the film icon is replaced when one arrives. */
 function tlShowThumb(id) {
-  const ph = document.querySelector(`.tl-item[data-id="${id}"] span.tl-thumb`);
-  if (!ph || !TL.thumbs[id]) return;
+  const ph = document.querySelector(`.tl-item[data-id="${CSS.escape(id)}"] span.tl-thumb`); // id comes from the camera
+  if (!ph || !TL.thumbs[id]) return; // no row, no picture yet, or it already shows it
   const img = document.createElement('img');
   img.className = 'tl-thumb'; img.alt = ''; img.src = TL.thumbs[id];
   ph.replaceWith(img);
@@ -298,7 +325,7 @@ function tlShowProgress() {
     if (mine) {
       const pct = d.size ? Math.min(100, d.got / d.size * 100) : 0;
       row.querySelector('.bar i').style.width = pct + '%';
-      row.querySelector('.s').textContent = t('tl_downloading', { p: fmtNum(pct) });
+      setText(row.querySelector('.s'), t('tl_downloading', { p: fmtNum(pct) }));
     }
   }
 }
@@ -340,7 +367,8 @@ function openTimelapse() { openPanel('tl'); tlRequestList(); }
 
 // ---------- Wiring ----------
 onSeg('selTlInt', v => { tlSavePrefs({ interval: +v }); renderTlEstimate(); });
-onSeg('selTlDur', v => { tlSavePrefs({ minutes: +v }); renderTlEstimate(); });
+onSeg('selTlDur', v => { tlSavePrefs({ minutes: +v }); showTlDur(+v); renderTlEstimate(); });
+$('tlDur').addEventListener('input', () => { const v = +$('tlDur').value; tlSavePrefs({ minutes: v }); showTlDur(v); renderTlEstimate(); });
 onSeg('selTlQ', v => { tlSavePrefs({ q: +v }); renderTlEstimate(); });
 $('tTlStamp').onchange = () => tlSavePrefs({ stamp: $('tTlStamp').checked });
 $('tTlGallery').onchange = () => tlSavePrefs({ gallery: $('tTlGallery').checked });

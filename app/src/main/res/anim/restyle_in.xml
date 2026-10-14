@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The rebuilt screen fades in over the old one after a theme or language change (BaseActivity.restyle) -->
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromAlpha="0" android:toAlpha="1" android:duration="220"
+    android:interpolator="@android:interpolator/decelerate_quad" />

@@ -16,6 +16,7 @@ import org.webrtc.ProCapturer
 import vn.camerold.R
 import vn.camerold.camera.CameraEngine
 import vn.camerold.camera.CameraService
+import vn.camerold.camera.Recorder
 import vn.camerold.camera.Rtc
 import vn.camerold.data.CamConfig
 import vn.camerold.data.Prefs
@@ -38,6 +39,7 @@ class CameraSettingsActivity : BaseActivity() {
         fun summary(a: android.content.Context, c: CamConfig, lensLabel: String?): String = listOfNotNull(
             qualityName(c), "${c.fps} fps", c.aspect, lensLabel,
             a.getString(if (c.audio) R.string.sum_sound_on else R.string.sum_sound_off),
+            if (c.recOn) a.getString(R.string.sum_rec) else null,
         ).joinToString(" · ")
 
         fun qualityName(c: CamConfig) = when (minOf(c.res, Rtc.maxRes(c.codec, c.aspect))) { 2160 -> "4K"; 720 -> "HD"; else -> "Full HD" }
@@ -81,6 +83,14 @@ class CameraSettingsActivity : BaseActivity() {
     private lateinit var turnPass: EditText
     private lateinit var lockNote: View
     private lateinit var rHeatStart: Rows.Row
+    private lateinit var recRows: List<Rows.Row>
+    private lateinit var rRecQ: Rows.Row
+    private lateinit var rRecFps: Rows.Row
+    private lateinit var rRecKeep: Rows.Row
+    private lateinit var rRecFormat: Rows.Row
+    private lateinit var recNote: android.widget.TextView
+    private lateinit var rRecList: Rows.Row
+    private val canHevc by lazy { Recorder.canHevc() }
 
     private lateinit var rBrokerMode: Rows.Row
     private lateinit var rProvider: Rows.Row
@@ -140,6 +150,39 @@ class CameraSettingsActivity : BaseActivity() {
         val (rAudio, _) = rows.switchRow(sound, R.drawable.ic_mic, R.string.row_sound, cfg.audio) { update(cfg.copy(audio = it)) }
         rAudio.value(getString(R.string.sound_sub))
         lockable += rAudio.view
+
+        // Continuous recording: can change any time, also while streaming (applied live)
+        val rec = rows.section(content, R.string.section_rec)
+        val (rRec, _) = rows.switchRow(rec, R.drawable.ic_rec, R.string.rec_on, cfg.recOn) { on ->
+            if (on && !charging()) Toast.makeText(this, R.string.rec_charge, Toast.LENGTH_LONG).show()
+            updateRec(cfg.copy(recOn = on))
+        }
+        rRec.value(getString(R.string.rec_on_sub))
+        rRecQ = rows.row(rec, R.drawable.ic_hd, R.string.rec_quality) {
+            rows.choose(R.string.rec_quality, listOf(R.string.rec_q_hd, R.string.rec_q_fhd).map(::getString),
+                Recorder.QUALITIES.indexOf(cfg.recQ).coerceAtLeast(0)) { updateRec(cfg.copy(recQ = Recorder.QUALITIES[it])) }
+        }
+        rRecFps = rows.row(rec, R.drawable.ic_speed, R.string.rec_fps) {
+            rows.choose(R.string.rec_fps, Recorder.FPS.map { getString(R.string.rec_fps_value, it) },
+                Recorder.FPS.indexOf(cfg.recFps).coerceAtLeast(0)) { updateRec(cfg.copy(recFps = Recorder.FPS[it])) }
+        }
+        rRecKeep = rows.row(rec, R.drawable.ic_shield, R.string.rec_keep) {
+            rows.choose(R.string.rec_keep, Recorder.KEEP_DAYS.map(::keepLabel),
+                Recorder.KEEP_DAYS.indexOf(cfg.recDays).coerceAtLeast(0)) { updateRec(cfg.copy(recDays = Recorder.KEEP_DAYS[it])) }
+        }
+        rRecFormat = rows.row(rec, R.drawable.ic_chip, R.string.rec_format) {
+            if (!canHevc) return@row
+            rows.choose(R.string.rec_format, listOf(getString(R.string.rec_hevc), getString(R.string.rec_h264)),
+                if (cfg.recH264) 1 else 0) { updateRec(cfg.copy(recH264 = it == 1)) }
+        }
+        val (rRecView, _) = rows.switchRow(rec, R.drawable.ic_eye, R.string.rec_view_only, cfg.recViewOnly) {
+            updateRec(cfg.copy(recViewOnly = it))
+        }
+        rRecView.value(getString(R.string.rec_view_only_sub))
+        recRows = listOf(rRecQ, rRecFps, rRecKeep, rRecFormat, rRecView)
+        // The recordings themselves: watch, save to the gallery, delete (also with recording off)
+        rRecList = rows.row(rec, R.drawable.ic_film, R.string.rec_list) { startActivity(Intent(this, RecordingsActivity::class.java)) }
+        recNote = rows.note(content, "")
 
         // Where the camera and its viewers meet: public brokers, or the user's own
         val srv = rows.section(content, R.string.section_broker)
@@ -224,6 +267,42 @@ class CameraSettingsActivity : BaseActivity() {
         CameraEngine.current?.setHeatGuard(c.heatGuard, c.heatStart)
     }
 
+    private fun updateRec(c: CamConfig) {
+        update(Prefs.load(this).copy(recOn = c.recOn, recQ = c.recQ, recFps = c.recFps, recDays = c.recDays,
+            recH264 = c.recH264, recViewOnly = c.recViewOnly))
+        CameraEngine.current?.setRecording(cfg)
+    }
+
+    private fun keepLabel(d: Int) = if (d == 0) getString(R.string.rec_keep_full) else getString(R.string.rec_keep_days, d)
+
+    private fun charging() = try {
+        registerReceiver(null, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            ?.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, 0) != 0
+    } catch (_: Exception) { true }
+
+    /** "12 recordings · 3.1 GB", or "None yet". */
+    private fun recCount(): String {
+        val days = Recorder.rootOf(this).listFiles { f -> f.isDirectory && f.name.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) } ?: emptyArray()
+        val mp4 = days.flatMap { d -> d.listFiles { f -> f.name.endsWith(".mp4") }?.toList() ?: emptyList() }
+        return if (mp4.isEmpty()) getString(R.string.rec_list_empty)
+        else resources.getQuantityString(R.plurals.recs_n, mp4.size, mp4.size,
+            android.text.format.Formatter.formatShortFileSize(this, mp4.sumOf { it.length() }))
+    }
+
+    /** Size an hour (measured on recent recordings when the camera runs) and how long free storage lasts. */
+    private fun recEstimate(): String {
+        val hevc = canHevc && !cfg.recH264
+        val live = CameraEngine.current?.recorder?.json()
+        val perHour = live?.optLong("rate")?.takeIf { it > 0 && live.optInt("q") == cfg.recQ && live.optInt("fps") == cfg.recFps }
+            ?: Recorder.bytesPerHour(cfg.recQ, cfg.recFps, hevc)
+        val st = try { android.os.StatFs(filesDir.path) } catch (_: Exception) { null }
+        val used = java.io.File(filesDir, "rec").walkTopDown().filter { it.isFile }.sumOf { it.length() }
+        val room = ((st?.availableBytes ?: 0L) + used - Recorder.minFree(st?.totalBytes ?: 0L)).coerceAtLeast(0)
+        val hours = room / perHour
+        val holds = if (hours >= 48) getString(R.string.rec_days_n, (hours / 24).toInt()) else getString(R.string.rec_hours_n, hours.toInt())
+        return getString(R.string.rec_note, android.text.format.Formatter.formatShortFileSize(this, perHour), holds)
+    }
+
     private fun providerName(p: Brokers.Provider) = p.name.ifEmpty { getString(R.string.provider_custom) }
 
     /** Keeps what was typed in the server fields. */
@@ -275,6 +354,13 @@ class CameraSettingsActivity : BaseActivity() {
         rCodec.value(codecLabels[CODECS.indexOf(cfg.codec).coerceAtLeast(0)])
         rHeatStart.value(getString(R.string.heat_start_value, cfg.heatStart, cfg.heatStart + 3, cfg.heatStart + 6))
         rHeatStart.enabled = cfg.heatGuard
+        rRecQ.value(getString(if (cfg.recQ == 1080) R.string.rec_q_fhd else R.string.rec_q_hd))
+        rRecFps.value(getString(R.string.rec_fps_value, cfg.recFps))
+        rRecKeep.value(keepLabel(cfg.recDays))
+        rRecFormat.value(getString(if (!canHevc) R.string.rec_no_hevc else if (cfg.recH264) R.string.rec_h264 else R.string.rec_hevc))
+        recRows.forEach { it.enabled = cfg.recOn }
+        recNote.text = recEstimate()
+        rRecList.value(recCount())
         val own = cfg.brokerMode == Brokers.MODE_OWN
         val p = Brokers.provider(cfg.brokerProvider)
         rBrokerMode.value(getString(if (own) R.string.broker_own else R.string.broker_public))

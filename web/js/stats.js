@@ -35,10 +35,15 @@ function startStats() {
       (S.viewers > 1 ? ' · ' + t('n_watching', { n: S.viewers }) : ''), 'ok');
   }, 1000);
 }
-/** Two-column label/value grid (built with textContent – values never contain markup). */
+/**
+ * Two-column label/value grid (textContent – values never contain markup). It refreshes every second, so the cells
+ * stay and only the values that changed are written.
+ */
 function renderStats(rows) {
-  const box = $('stats'); box.replaceChildren();
-  for (const [k, v] of rows) for (const text of [k, v]) { const s = document.createElement('span'); s.textContent = text; box.appendChild(s); }
+  const box = $('stats'), cells = box.children, texts = rows.flat();
+  while (cells.length < texts.length) box.appendChild(document.createElement('span'));
+  while (cells.length > texts.length) box.lastChild.remove();
+  texts.forEach((text, i) => setText(cells[i], text));
 }
 /** Info button: an overlay on the video in landscape; in portrait the info is in the "Camera phone" tab. */
 function toggleStats() {

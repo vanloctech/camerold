@@ -1,6 +1,4 @@
-<p align="center"><img src="docs/logo.svg" width="112" alt="Camerold logo"></p>
-
-<h1 align="center">Camerold</h1>
+<p align="center"><img src="docs/banner.jpg" width="100%" alt="Camerold: the home screen, a camera watched live, and the camera phone ready to stream"></p>
 
 <p align="center">
   <b>Turn an old Android phone into a live security camera.</b><br>
@@ -18,7 +16,7 @@
 <p align="center">
   <a href="../../releases/latest/download/Camerold.apk"><img alt="Download Camerold.apk" src="https://img.shields.io/badge/Download-Camerold.apk-2e6bf0?style=for-the-badge&logo=android&logoColor=white"></a>
 </p>
-<p align="center"><a href="../../releases">All releases</a> · <a href="README.vi.md">Tiếng Việt</a></p>
+<p align="center"><a href="https://vanloctech.github.io/camerold/"><b>Open the web viewer</b></a> · <a href="../../releases">All releases</a> · <a href="README.vi.md">Tiếng Việt</a></p>
 
 ---
 
@@ -114,7 +112,10 @@ You can also type the camera code and password instead of scanning.
 
 ## Watching from a computer
 
-The viewer is a static web page in [`web/`](web), so it can be hosted anywhere.
+**Quickest:** open **<https://vanloctech.github.io/camerold/>** in any modern browser. Nothing to install or host.
+The page is static: video and passwords stay between your browser and the camera phone, end-to-end encrypted.
+
+The viewer is a static web page in [`web/`](web), so you can also host your own copy:
 
 - **GitHub Pages** (workflow included): in your fork, open **Settings → Pages → Source: GitHub Actions**.
   The viewer is published at `https://<user>.github.io/<repo>/`.

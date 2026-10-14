@@ -26,7 +26,7 @@ ANDROID = {
     "ic_battery": "battery", "ic_info": "info", "ic_doc": "file-text", "ic_language": "languages", "ic_palette": "palette",
     "ic_server": "server", "ic_warn": "triangle-alert", "ic_heart": "heart", "ic_coffee": "coffee",
     "ic_thermo": "thermometer", "ic_smartphone": "smartphone", "ic_shield": "shield-check",
-    "ic_sliders": "sliders-horizontal",
+    "ic_sliders": "sliders-horizontal", "ic_rec": "video", "ic_download": "download", "ic_trash": "trash-2", "ic_film": "film", "ic_calendar": "calendar-range", "ic_fingerprint": "fingerprint", "ic_delete": "delete", "ic_lock": "lock",
 }
 # Web symbol id -> Lucide icon
 WEB = {
@@ -37,7 +37,7 @@ WEB = {
     "i-image": "image", "i-more": "ellipsis-vertical", "i-trash": "trash-2", "i-key": "key-round", "i-shot": "aperture",
     "i-flip": "switch-camera", "i-heat": "thermometer", "i-battery": "battery-low", "i-plus": "plus", "i-scan": "scan-line",
     "i-heart": "heart", "i-coffee": "coffee", "i-timer": "timer", "i-download": "download", "i-play": "play",
-    "i-stop": "square", "i-film": "film", "i-phone": "smartphone",
+    "i-stop": "square", "i-film": "film", "i-phone": "smartphone", "i-paste": "clipboard-paste", "i-share": "share-2",
 }
 
 
